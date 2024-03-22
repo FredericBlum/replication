@@ -4,7 +4,10 @@ library(brms)
 library(ggplot2)
 library(reshape2)
 library(soundgen)  # optional (only used to print estimated time left in some loops)
+library(cmdstanr)
 
+set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
+ 
 #############################
 ### CONTROL PARAMETERS
 #############################
@@ -177,7 +180,7 @@ for (myvar in variables) {
   model_data %>% filter(is.na(latitude))
   ## Model
   mod_name=paste0(folder_model, '/june2019_', myvar, '.RDS')
-  
+
   mod <- brm(
     data=model_data,
     family='dirichlet',
