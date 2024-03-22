@@ -1,0 +1,35 @@
+Key to datasets
+
+full_dataset.csv	
+  The main original dataset: a list of phonetic transcriptions (unicode) in table form
+    Row 1: language
+    Row 2: language (ISO code)
+    Row 3: region
+    Row 4 through 347: data
+    Column 1: concept
+    Column 2 through 246: data
+
+phonetic_groups.csv
+  Phonetic groups corresponding to each unicode symbol in full_dataset.csv
+    "unicode": unicode symbol used in full_dataset.csv
+    "ipa": the corresponding symbol in IPA phonetic transcription
+    "height", "backness", ..., "gr60": phonetic groups
+    "cardinal", "cardinal_ipa": the corresponding cardinal sound in unicode / ipa transcription
+
+sound_groups_abbreviation.csv
+  A list of abbreviations used for plotting purposes
+
+models_complete.csv
+  Fitted values from all models of relative frequency
+    "word": concept
+    "group": the value of grouping variable (e.g., high/mid/low for vowel height)
+    "fit": median of the posterior distribution of the log-odds ratio of predicted to expected frequency (see main text)
+    "lwr", "upr": boundaries of 95% credible interval for "fit"
+    "nLangs": the number of languages that have the value in question (e.g., a low vowel) in the word for the concept in question
+    "nRegions": the number of regions that the languages in "nLangs" are from
+    "cardinal": over-represented cardinal sounds (defined as follows: log-odds ratio for observed - not fitted! - values is above zero), ordered from most to least over-represented
+    "topCardinal": the over-represented cardinal sound that is the most common one in the word in question across all languages in terms of its absolute frequency
+    "fitProp_fit", "fitProp_lwr", "fitProp_upr": fitted value and 95% CI for the proportion of "group" sound class
+    "obs": observed proportion of "group" sound class averaged across all languages (the observed equivalent of the "fitProp_fit" variable)
+    "obs_OR": log-odds ratio of observed to expected frequency (the observed equivalent of the "fit" variable)
+    "myvar": grouping variable (e.g., vowel height)

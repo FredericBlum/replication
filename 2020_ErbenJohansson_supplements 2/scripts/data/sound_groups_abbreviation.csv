@@ -1,0 +1,55 @@
+sound_group,abbreviation
+high,[high]
+mid,[mid]
+low,[low]
+front,[front]
+central,[central]
+back,[back]
+unrounded,[-round]
+rounded,[+round]
+high-front,[high-front]
+high-back,[high-back]
+low-front,[low-front]
+low-back,[low-back]
+nasal,[nas]
+stop,[stop]
+continuant,[cont]
+vibrant,[vib]
+lateral,[lat]
+labial,[lab]
+alveolar,[alv]
+palatal,[pal]
+velar,[vel]
+glottal,[glot]
+high-front-unrounded,"[high-front, -r]"
+low-front-unrounded,"[low-front, -r]"
+high-back-unrounded,"[high-back, -r]"
+low-back-unrounded,"[low-back, -r]"
+high-front-rounded,"[high-front, +r]"
+low-front-rounded,"[low-front, +r]"
+high-back-rounded,"[high-back, +r]"
+low-back-rounded,"[low-back, +r]"
+nasal-voice,"[nas, -v]"
+nasal+voice,"[nas, +v]"
+stop-voice,"[stop, -v]"
+stop+voice,"[stop, +v]"
+continuant-voice,"[cont, -v]"
+continuant+voice,"[cont, +v]"
+vibrant-voice,"[vib, -v]"
+vibrant+voice,"[vib, +v]"
+lateral-voice,"[lat, -v]"
+lateral+voice,"[lat, +v]"
+labial-voice,"[lab, -v]"
+labial+voice,"[lab, +v]"
+alveolar-voice,"[alv, -v]"
+alveolar+voice,"[alv, +v]"
+palatal-voice,"[pal, -v]"
+palatal+voice,"[pal, +v]"
+velar-voice,"[vel, -v]"
+velar+voice,"[vel, +v]"
+glottal-voice,"[glot, -v]"
+glottal+voice,"[glot, +v]"
+voiced,[+voice]
+unvoiced,[-voice]
+consonant,[cons]
+vowel,[vwl]
