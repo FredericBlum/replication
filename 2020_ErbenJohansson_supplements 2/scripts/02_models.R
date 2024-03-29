@@ -249,7 +249,7 @@ for (myvar in variables) {
     df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
 
-    ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+    plot_1 <- ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
       geom_text(size=3, nudge_x=3) +
@@ -267,7 +267,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(filename=paste0(folder_fig, '/fit_', myvar, '.png'),
+    ggsave(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'),
           height=20, width=20, units='cm', dpi=300)
   }
 
@@ -308,7 +308,7 @@ for (myvar in variables) {
   df_plot_obs=reshape2::melt(df_obs, id='word')
 
   if (plot_observed) {
-    ggplot(df_plot_obs, aes(x=word, y=value)) +
+    plot_2 <- ggplot(df_plot_obs, aes(x=word, y=value)) +
       geom_point() +
       scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
       coord_flip() +
@@ -319,7 +319,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(filename=paste0(folder_fig, '/obs_', myvar, '.png'),
+    ggsave(plot_2, filename=paste0(folder_fig, '/obs_', myvar, '.png'),
            width=6 * n_levels, height=20, units='cm', dpi=300)
   }
 
@@ -404,7 +404,7 @@ for (myvar in variables) {
     df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
 
-    ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
+    plot_3 <- ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
       geom_text(size=3, nudge_x=3) +
@@ -422,11 +422,11 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(filename=paste0(folder_fig, '/fit_', myvar, '_prop.png'),
+    ggsave(plot_3, filename=paste0(folder_fig, '/fit_', myvar, '_prop.png'),
            height=20, width=6 * length(myPropVars), units='cm', dpi=300)
 
 
-    ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+    plot_4 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
       geom_point() +
       geom_errorbar(width=0) +
@@ -447,7 +447,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(filename=paste0(folder_fig, '/fit_', myvar, '_OR.png'),
+    ggsave(plot_4, filename=paste0(folder_fig, '/fit_', myvar, '_OR.png'),
            height=20, width=6 * length(myPropVars), units='cm', dpi=300)
   }
 
