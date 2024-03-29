@@ -16,9 +16,9 @@ sample_size <- 1
 # What are we modeling?
 # myvar='position'  # possible values: backness, height, roundedness, extreme, extreme_roundedness, manner, manner_voicing, position, position_voicing, voicing, vowelConsonant
 
-variables <- c('backness', 'height', 'roundedness', 'extreme', 
-               'extreme_roundedness', 'manner', 'manner_voicing', 'position',
-               "position_voicing", "voicing", "vowelConsonant")
+variables <- c('backness', 'height', 'roundedness', 'extreme') 
+            #    'extreme_roundedness', 'manner', 'manner_voicing', 'position',
+            #    "position_voicing", "voicing", "vowelConsonant")
 
 for (myvar in variables) {
   # myvar <- 'backness'
@@ -196,15 +196,6 @@ for (myvar in variables) {
     warmup=1000, iter=4000, chains=4, cores=4
     )
   
-  
-  # summary(mod)
-  # plot(mod)
-  # 
-  # ## Model predictions
-  # newdata=data.frame(
-  #   word=levels(model_data$word),
-  #   
-  #   )
 
   model_data <- model_data %>% sample_frac(sample_size)
   fit=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=FALSE)
@@ -276,8 +267,8 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    # ggsave(filename=paste0(folder_fig, '/fit_', myvar, '.png'),
-    #       height=20, width=20, units='cm', dpi=300)
+    ggsave(filename=paste0(folder_fig, '/fit_', myvar, '.png'),
+          height=20, width=20, units='cm', dpi=300)
   }
 
   # How many languages & regions contain the phoneme(s) in question?
