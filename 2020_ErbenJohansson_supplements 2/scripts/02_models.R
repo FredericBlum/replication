@@ -11,7 +11,7 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 #############################
 ### CONTROL PARAMETERS
 #############################
-sample_size <- 1
+sample_size <- 0.01
 
 # What are we modeling?
 # myvar='position'  # possible values: backness, height, roundedness, extreme, extreme_roundedness, manner, manner_voicing, position, position_voicing, voicing, vowelConsonant
@@ -26,7 +26,6 @@ for (myvar in variables) {
   drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
   
   # brms settings
-  cores=4
   folder_model='models'  # path to folder for saving .RDS files
   
   # Where and how to save stuff
@@ -193,7 +192,7 @@ for (myvar in variables) {
     silent=0,
     backend='cmdstan',
     #file=mod_name,
-    iter=20, warmup=10, chains=4, cores=4
+    iter=20, warmup=10, chains=2, cores=2
     )
   
 
@@ -268,7 +267,7 @@ for (myvar in variables) {
             legend.position='none')
 
     png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'),
-          height=20, width=20, units='cm', dpi=300)
+          height=20, width=20)
   }
 
   # How many languages & regions contain the phoneme(s) in question?
@@ -320,7 +319,7 @@ for (myvar in variables) {
             legend.position='none')
 
     png(plot_2, filename=paste0(folder_fig, '/obs_', myvar, '.png'),
-           width=6 * n_levels, height=20, units='cm', dpi=300)
+           width=6 * n_levels, height=20)
   }
 
 
@@ -423,8 +422,7 @@ for (myvar in variables) {
             legend.position='none')
 
     png(plot_3, filename=paste0(folder_fig, '/fit_', myvar, '_prop.png'),
-           height=20, width=6 * length(myPropVars), units='cm', dpi=300)
-
+           height=20, width=6 * length(myPropVars))
 
     plot_4 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
@@ -448,7 +446,7 @@ for (myvar in variables) {
             legend.position='none')
 
     png(plot_4, filename=paste0(folder_fig, '/fit_', myvar, '_OR.png'),
-           height=20, width=6 * length(myPropVars), units='cm', dpi=300)
+           height=20, width=6 * length(myPropVars))
   }
 
   write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))
