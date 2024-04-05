@@ -192,8 +192,8 @@ for (myvar in variables) {
     prior=c(prior(gamma(1, 1), class=phi)),
     silent=0,
     backend='cmdstan',
-    file=mod_name,
-    warmup=1000, iter=4000, chains=4, cores=4
+    #file=mod_name,
+    iter=20, warmup=10, chains=4, cores=4
     )
   
 
