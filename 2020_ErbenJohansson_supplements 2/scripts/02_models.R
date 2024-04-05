@@ -266,8 +266,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'),
-          height=20, width=20)
+    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo', units='px')
   }
 
   # How many languages & regions contain the phoneme(s) in question?
@@ -317,9 +316,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-
-    png(plot_2, filename=paste0(folder_fig, '/obs_', myvar, '.png'),
-           width=6 * n_levels, height=20)
+    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo', units='px')
   }
 
 
@@ -420,9 +417,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-
-    png(plot_3, filename=paste0(folder_fig, '/fit_', myvar, '_prop.png'),
-           height=20, width=6 * length(myPropVars))
+    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo', units='px')
 
     plot_4 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
@@ -444,9 +439,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-
-    png(plot_4, filename=paste0(folder_fig, '/fit_', myvar, '_OR.png'),
-           height=20, width=6 * length(myPropVars))
+    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo', units='px')
   }
 
   write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))
