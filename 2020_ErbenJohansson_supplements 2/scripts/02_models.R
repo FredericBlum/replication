@@ -267,7 +267,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'),
+    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'),
           height=20, width=20, units='cm', dpi=300)
   }
 
@@ -319,7 +319,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(plot_2, filename=paste0(folder_fig, '/obs_', myvar, '.png'),
+    png(plot_2, filename=paste0(folder_fig, '/obs_', myvar, '.png'),
            width=6 * n_levels, height=20, units='cm', dpi=300)
   }
 
@@ -422,7 +422,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(plot_3, filename=paste0(folder_fig, '/fit_', myvar, '_prop.png'),
+    png(plot_3, filename=paste0(folder_fig, '/fit_', myvar, '_prop.png'),
            height=20, width=6 * length(myPropVars), units='cm', dpi=300)
 
 
@@ -447,7 +447,7 @@ for (myvar in variables) {
             axis.ticks.y=element_blank(),
             legend.position='none')
 
-    ggsave(plot_4, filename=paste0(folder_fig, '/fit_', myvar, '_OR.png'),
+    png(plot_4, filename=paste0(folder_fig, '/fit_', myvar, '_OR.png'),
            height=20, width=6 * length(myPropVars), units='cm', dpi=300)
   }
 
