@@ -5,43 +5,44 @@ library(ggplot2)
 library(reshape2)
 library(soundgen)  # optional (only used to print estimated time left in some loops)
 library(cmdstanr)
+library(dplyr)
 
 # set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 
 #############################
 ### CONTROL PARAMETERS
 #############################
-sample_size <- 0.001
+sample_size <- 0.01
 
 # What are we modeling?
 # myvar='position'  # possible values: backness, height, roundedness, extreme, extreme_roundedness, manner, manner_voicing, position, position_voicing, voicing, vowelConsonant
 
-variables <- c('backness', 'height', 'roundedness', 'extreme') 
+variables <- c('backness', 'height', 'roundedness', 'extreme')
             #    'extreme_roundedness', 'manner', 'manner_voicing', 'position',
             #    "position_voicing", "voicing", "vowelConsonant")
 
 for (myvar in variables) {
   grType=c('cardinal', 'gr35', 'gr60')[1]
   drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
-  
+
   # brms settings
   folder_model='models'  # path to folder for saving .RDS files
-  
+
   # Where and how to save stuff
   folder_data='data'  # path to folder with original .csv files
   folder_data_derived='data_derived'  # path to folder with derived .csv files
   folder_fig='pix_june2019'
-  
+
   # Plotting options
   plot_fitted=TRUE
   threshold=log2(1.20)  # for plot_fitted: 25% increased or decreased odds of finding the sound
   plot_observed=FALSE
-  
+
   #############################
   ### END OF CONTROL PARAMETERS
   #############################
-  
-  # Load the main datasets and helper functions 
+
+  # Load the main datasets and helper functions
   # (excutes only the first time the script is loaded)
   c=0
   if (c < 1) {
@@ -49,22 +50,22 @@ for (myvar in variables) {
     for (f in c(folder_data, folder_data_derived, folder_fig)) {
       if (!dir.exists(f)) dir.create(f)
     }
-    
+
     odds=function(x) {
       # x[x >= 1]=.99  # cap odds at 100/1, otherwise bad for plotting
       return(x / (1 - x))
-    } 
-    
+    }
+
     countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column, reportEvery=NULL) {
       # set up the new dataframe
       out=data.frame(lang_word=unique(dataSource$lang_word), language=NA, word=NA, stringsAsFactors=FALSE)
       groupingVar_levels=levels(dataSource[, groupingVar])
       out[, normBy]=dataSource[match(out$lang_word, dataSource$lang_word), normBy]
       out[, groupingVar_levels]=NA
-      
+
       # calculate phoneme class counts per word and lang
-      myt=unclass(table(dataSource[, groupingVar], dataSource$word, dataSource$language))  
-      
+      myt=unclass(table(dataSource[, groupingVar], dataSource$word, dataSource$language))
+
       # for each word in data, transform counts to proportions
       time_start=proc.time()
       nr=nrow(out)
@@ -78,9 +79,9 @@ for (myvar in variables) {
         out[i, groupingVar_levels]=temp2
         if (is.numeric(reportEvery)) {
           try(soundgen:::reportTime(i, nr, time_start=time_start, reportEvery=10000))
-        } 
+        }
       }
-      
+
       if (simplex_in_one_column) {
         # reformat the response simplex into a single column, so brm() can read it properly
         respDir=as.matrix(out[, groupingVar_levels])
@@ -88,18 +89,18 @@ for (myvar in variables) {
         out$respDir=respDir
         out=out[, c('language', 'word', 'respDir')]
       }
-      
+
       out$language=as.factor(out$language)
       out$word=as.factor(out$word)
       # head(out)
       return(out)
     }
-    
+
     # load data
-    df=read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors=TRUE) 
+    df=read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors=TRUE)
     ipa=read.csv(paste0(folder_data, '/phonetic_groups.csv'), stringsAsFactors=TRUE)
     ipa$vowelConsonant=as.factor(ifelse(ipa$height != '', 'vowel', 'consonant'))
-    
+
     # add phonetic info to the dataset
     includeVars=c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness', 'manner', 'manner_voicing', 'position', 'position_voicing', 'voicing', 'vowelConsonant', 'gr35', 'gr60', 'cardinal')
     df[, includeVars]=ipa[match(df$unicode, ipa$unicode), includeVars]
@@ -111,14 +112,14 @@ for (myvar in variables) {
       a_length=a_length[order(a_length$nPhonemesPerWord), ]
       head(a_length)
       tail(a_length)
-      
+
       # words that have a lot of missing values (no word recorded from many langs)
       a_miss=aggregate(language ~ word, df, function(x) length(unique(x)))
       a_miss=a_miss[order(a_miss$language), ]
       head(a_miss)
     }
   }
-  
+
   # Subset data: for vowel features, focus only on vowels; etc.
   if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'voicing')) {
     mySounds='consonants'
@@ -133,49 +134,49 @@ for (myvar in variables) {
     df1=droplevels(df[myvar != '', ])
     mv='nPhonemesPerWord'
   }
-  
+
   if (drop_rare_levels) {
     if (myvar == 'manner_voicing') {
-      df1=droplevels(df1[!df1$manner_voicing %in% c('lateral-voice', 'nasal-voice', 'vibrant-voice'), ])  
+      df1=droplevels(df1[!df1$manner_voicing %in% c('lateral-voice', 'nasal-voice', 'vibrant-voice'), ])
     } else if (myvar == 'position_voicing') {
-      df1=droplevels(df1[!df1$position_voicing %in% c('glottal+voice'), ])  
+      df1=droplevels(df1[!df1$position_voicing %in% c('glottal+voice'), ])
     } else if (myvar == 'extreme_roundedness') {
-      df1=droplevels(df1[!df1$extreme_roundedness %in% c('low-front-rounded', 'high-front-rounded'), ])  
+      df1=droplevels(df1[!df1$extreme_roundedness %in% c('low-front-rounded', 'high-front-rounded'), ])
     }
     # table(df1[, myvar])
   }
-  
+
   df1$lang_word=paste0(df1$language, 'ж', df1$word)  # 'ж' because '_' etc can be found in values
-  myPropVars=levels(df1[, myvar])  
+  myPropVars=levels(df1[, myvar])
   n_levels=length(myPropVars)
-  
+
   # Reformat data into a format suitable for brm() - save on disk to save a few min
   data_file=paste0(folder_data_derived, '/dirichlet_', myvar, '.RDS')
   if (file.exists(data_file)) {
     data=readRDS(data_file)
   } else {
-    data=countBy(groupingVar=myvar, normBy=mv, dataSource=df1, 
+    data=countBy(groupingVar=myvar, normBy=mv, dataSource=df1,
                    simplex_in_one_column=TRUE, reportEvery=10000)
     saveRDS(data, data_file)
   }
   head(data)
-  
-  
+
+
   # Add info about coordinates
   library(dplyr)
-  langs <- read.csv('languoid.csv') %>% 
+  langs <- read.csv('languoid.csv') %>%
     select(iso639P3code, latitude, longitude, id)
-  
-  lang_info <- df1 %>% select(language, iso, region) %>% 
+
+  lang_info <- df1 %>% select(language, iso, region) %>%
     unique()
-  
-  model_data <- data %>% left_join(lang_info) %>% 
-    left_join(langs, by=join_by(iso==iso639P3code)) %>% 
+
+  model_data <- data %>% left_join(lang_info) %>%
+    left_join(langs, by=join_by(iso==iso639P3code)) %>%
     mutate(
       latitude=as.numeric(latitude),
       longitude=as.numeric(longitude)
     )
-  
+
   model_data %>% filter(is.na(id))
   model_data %>% filter(is.na(latitude))
   ## Model
@@ -186,21 +187,21 @@ for (myvar in variables) {
     family='dirichlet',
     formula=
       respDir ~ 1 + (1|word) + (1|language) +
-      gp(longitude, latitude, by=region, gr=TRUE), 
+      gp(longitude, latitude, by=region, gr=TRUE),
     prior=c(prior(gamma(1, 1), class=phi)),
     silent=0,
-    backend='cmdstan',
+    # backend='cmdstan',
     file=mod_name,
-    iter=20, warmup=10, chains=2, cores=2
+    iter=10, warmup=5, chains=1, cores=1
     )
-  
 
-  model_data <- model_data %>% sample_frac(sample_size)
+
+  model_data <- model_data # %>% sample_frac(sample_size)
   fit=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=FALSE)
   # # dim(fit)  # rows=MCMC, columns=words, dim3=levels of myvar
-  # 
+  #
   # # Save fitted proportions per word
-  
+
   fit_prop=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=TRUE, robust=TRUE)
   rownames(fit_prop)=model_data$word
   colnames(fit_prop)=c('fit', 'se', 'lwr', 'upr')
@@ -238,7 +239,7 @@ for (myvar in variables) {
     }
   }
   df_plot$word_caps=as.factor(toupper(df_plot$word))
-  # head(df_plot)
+  head(df_plot)
 
   # Plotting fitted values
   if (FALSE) {
@@ -264,8 +265,6 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(plot_1, filename='test.png')
-    dev.off()
     png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
     dev.off()
   }
@@ -363,7 +362,7 @@ for (myvar in variables) {
   # Find over-/under-represented cardinal sounds and add these labels to df_plot (fitted values)
   df_plot$topCardinal=df_plot$cardinal=''
   for (i in 1:nrow(df_plot)) {
-    if (df_plot$fit[i] > 0) {
+    if (!is.na(df_plot$fit[i]) && df_plot$fit[i] > 0) {
       # positive (overrepresented)
       temp=dft_gr[dft_gr$word == df_plot$word[i] &
                       as.character(dft_gr[, myvar]) == as.character(df_plot$group[i]) &
