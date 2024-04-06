@@ -6,12 +6,12 @@ library(reshape2)
 library(soundgen)  # optional (only used to print estimated time left in some loops)
 library(cmdstanr)
 
-set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
+# set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 
 #############################
 ### CONTROL PARAMETERS
 #############################
-sample_size <- 0.01
+sample_size <- 0.001
 
 # What are we modeling?
 # myvar='position'  # possible values: backness, height, roundedness, extreme, extreme_roundedness, manner, manner_voicing, position, position_voicing, voicing, vowelConsonant
@@ -21,7 +21,6 @@ variables <- c('backness', 'height', 'roundedness', 'extreme')
             #    "position_voicing", "voicing", "vowelConsonant")
 
 for (myvar in variables) {
-  # myvar <- 'backness'
   grType=c('cardinal', 'gr35', 'gr60')[1]
   drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
   
@@ -191,7 +190,7 @@ for (myvar in variables) {
     prior=c(prior(gamma(1, 1), class=phi)),
     silent=0,
     backend='cmdstan',
-    #file=mod_name,
+    file=mod_name,
     iter=20, warmup=10, chains=2, cores=2
     )
   
@@ -265,7 +264,8 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-
+    png(plot_1, filename='test.png')
+    dev.off()
     png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
     dev.off()
   }
