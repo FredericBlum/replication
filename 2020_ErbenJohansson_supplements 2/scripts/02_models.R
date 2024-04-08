@@ -196,7 +196,7 @@ for (myvar in variables) {
   # Save fitted data
   fit_name=paste0(folder_data, '/repl2024_fit_', myvar, '.rds')
   if (file.exists(fit_name)) {
-    sim_data <- readRDS(file=fit_name)
+    fit <- readRDS(file=fit_name)
   } else{
     print("Sorry, the file does not yet exist. This may take some time.")
     fit=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=FALSE)
@@ -209,11 +209,11 @@ for (myvar in variables) {
   
   fit_propName=paste0(folder_data, '/repl2024_fitProp_', myvar, '.rds')
   if (file.exists(fit_propName)) {
-    sim_data <- readRDS(file=fit_propName)
+    fit_prop <- readRDS(file=fit_propName)
   } else{
     print("Sorry, the file does not yet exist. This may take some time.")
     fit_prop=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=TRUE, robust=TRUE)
-    saveRDS(fit, file=fit_propName)  
+    saveRDS(fit_prop, file=fit_propName)  
   }
   
   rownames(fit_prop)=model_data$word
