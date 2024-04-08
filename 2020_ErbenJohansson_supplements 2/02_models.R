@@ -190,11 +190,12 @@ for (myvar in variables) {
     silent=0,
     backend='cmdstan',
     file=mod_name,
-    iter=10, warmup=5, chains=1, cores=1
+    iter=20, warmup=10, chains=1, cores=1
     )
 
   # Save fitted data
-  fit_name=paste0(folder_data, '/repl2024_fit_', myvar, '.rds')
+  model_data <- 
+  fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
   if (file.exists(fit_name)) {
     fit <- readRDS(file=fit_name)
   } else{
@@ -207,7 +208,7 @@ for (myvar in variables) {
   #
   # # Save fitted proportions per word
   
-  fit_propName=paste0(folder_data, '/repl2024_fitProp_', myvar, '.rds')
+  fit_propName=paste0(folder_data_derived, '/repl2024_fitProp_', myvar, '.rds')
   if (file.exists(fit_propName)) {
     fit_prop <- readRDS(file=fit_propName)
   } else{
@@ -271,7 +272,7 @@ for (myvar in variables) {
       scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
       geom_hline(yintercept=0, linetype=3) +
       geom_hline(yintercept=threshold, linetype=2) +
-      geom_hline(yintercept=-threshold, linetype=2) #+
+      geom_hline(yintercept=-threshold, linetype=2) +
       coord_flip() +
       facet_wrap(~group, ncol=n_levels) +
       theme_bw() +
@@ -279,9 +280,9 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
   }
-
+  dev.off()
+  
   # How many languages & regions contain the phoneme(s) in question?
   for (i in 1:nrow(df_plot)) {
     idx=which(df1$word == as.character(df_plot$word[i]) &
@@ -318,8 +319,8 @@ for (myvar in variables) {
   # colMeans(df_obs_OR[, 2:ncol(df_obs_OR)])
   df_plot_obs=reshape2::melt(df_obs, id='word')
 
-  if (plot_observed) {
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
+  if (plot_observed==TRUE) {
+    png(filename=paste0(folder_fig, '/fit_obs_', myvar, '.png')) 
     ggplot(df_plot_obs, aes(x=word, y=value)) +
       geom_point() +
       scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
@@ -330,9 +331,8 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
   }
-
+  dev.off()
 
   ## OBSERVED FREQUENCIES PER CARDINAL
   # Count proportions of cardinal sounds in each word: pretty slow (~6 min),
@@ -414,7 +414,7 @@ for (myvar in variables) {
     df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
 
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
+    png(filename=paste0(folder_fig, '/fit_1_', myvar, '.png')) 
     ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
@@ -432,31 +432,32 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
-
-    # png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
-    # ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
-    #   geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
-    #   geom_point() +
-    #   geom_errorbar(width=0) +
-    #   geom_text(size=3, nudge_x=3) +
-    #   scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
-    #   scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-    #   # scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
-    #   xlab('Concept') +
-    #   ylab('Log-odds ratio') +
-    #   geom_hline(yintercept=0, linetype=3) +
-    #   geom_hline(yintercept=threshold, linetype=2) +
-    #   geom_hline(yintercept=-threshold, linetype=2) +
-    #   coord_flip() +
-    #   facet_wrap(~group, ncol=n_levels) +
-    #   theme_bw() +
-    #   theme(panel.grid=element_blank(),
-    #         axis.text.y=element_blank(),
-    #         axis.ticks.y=element_blank(),
-    #         legend.position='none')
-    # dev.off()
   }
-
+  dev.off()
+  if (plot_fitted) {
+    png(filename=paste0(folder_fig, '/fit_2_', myvar, '.png'))
+    ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+      geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
+      geom_point() +
+      geom_errorbar(width=0) +
+      geom_text(size=3, nudge_x=3) +
+      scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
+      scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+      # scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
+      xlab('Concept') +
+      ylab('Log-odds ratio') +
+      geom_hline(yintercept=0, linetype=3) +
+      geom_hline(yintercept=threshold, linetype=2) +
+      geom_hline(yintercept=-threshold, linetype=2) +
+      coord_flip() +
+      facet_wrap(~group, ncol=n_levels) +
+      theme_bw() +
+      theme(panel.grid=element_blank(),
+            axis.text.y=element_blank(),
+            axis.ticks.y=element_blank(),
+            legend.position='none')
+  }
+  dev.off()
+  
   write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))
 }
