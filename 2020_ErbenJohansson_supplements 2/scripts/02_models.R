@@ -278,7 +278,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
     dev.off()
   }
 
@@ -329,7 +329,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo') 
     dev.off()
   }
 
@@ -431,7 +431,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo') 
     dev.off()
 
     ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
@@ -454,7 +454,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
     dev.off()
   }
 
