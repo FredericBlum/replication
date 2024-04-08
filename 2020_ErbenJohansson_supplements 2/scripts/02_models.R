@@ -7,31 +7,29 @@ library(soundgen)  # optional (only used to print estimated time left in some lo
 library(cmdstanr)
 library(dplyr)
 
-# set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
+set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 
 #############################
 ### CONTROL PARAMETERS
 #############################
-sample_size <- 0.01
-
 # What are we modeling?
 # myvar='position'  # possible values: backness, height, roundedness, extreme, extreme_roundedness, manner, manner_voicing, position, position_voicing, voicing, vowelConsonant
 
-variables <- c('backness', 'height', 'roundedness', 'extreme')
-            #    'extreme_roundedness', 'manner', 'manner_voicing', 'position',
-            #    "position_voicing", "voicing", "vowelConsonant")
+variables <- c('backness', 'height', 'roundedness', 'extreme',
+               'extreme_roundedness', 'manner', 'manner_voicing', 'position',
+               'position_voicing', 'voicing', 'vowelConsonant')
 
 for (myvar in variables) {
   grType=c('cardinal', 'gr35', 'gr60')[1]
   drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
   # brms settings
-  folder_model='models'  # path to folder for saving .RDS files
+  folder_model='models'  # path to folder for saving .rds files
 
   # Where and how to save stuff
   folder_data='data'  # path to folder with original .csv files
   folder_data_derived='data_derived'  # path to folder with derived .csv files
-  folder_fig='pix_june2019'
+  folder_fig='pix_repl2024'
 
   # Plotting options
   plot_fitted=TRUE
@@ -151,7 +149,7 @@ for (myvar in variables) {
   n_levels=length(myPropVars)
 
   # Reformat data into a format suitable for brm() - save on disk to save a few min
-  data_file=paste0(folder_data_derived, '/dirichlet_', myvar, '.RDS')
+  data_file=paste0(folder_data_derived, '/dirichlet_', myvar, '.rds')
   if (file.exists(data_file)) {
     data=readRDS(data_file)
   } else {
@@ -180,7 +178,7 @@ for (myvar in variables) {
   model_data %>% filter(is.na(id))
   model_data %>% filter(is.na(latitude))
   ## Model
-  mod_name=paste0(folder_model, '/june2019_', myvar, '.RDS')
+  mod_name=paste0(folder_model, '/repl2024_', myvar, '.rds')
 
   mod <- brm(
     data=model_data,
@@ -190,19 +188,34 @@ for (myvar in variables) {
       gp(longitude, latitude, by=region, gr=TRUE),
     prior=c(prior(gamma(1, 1), class=phi)),
     silent=0,
-    # backend='cmdstan',
+    backend='cmdstan',
     file=mod_name,
     iter=10, warmup=5, chains=1, cores=1
     )
 
+  # Save fitted data
+  fit_name=paste0(folder_data, '/repl2024_fit_', myvar, '.rds')
+  if (file.exists(fit_name)) {
+    sim_data <- readRDS(file=fit_name)
+  } else{
+    print("Sorry, the file does not yet exist. This may take some time.")
+    fit=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=FALSE)
+    saveRDS(fit, file=fit_name)  
+  }
 
-  model_data <- model_data # %>% sample_frac(sample_size)
-  fit=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=FALSE)
   # # dim(fit)  # rows=MCMC, columns=words, dim3=levels of myvar
   #
   # # Save fitted proportions per word
-
-  fit_prop=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=TRUE, robust=TRUE)
+  
+  fit_propName=paste0(folder_data, '/repl2024_fitProp_', myvar, '.rds')
+  if (file.exists(fit_propName)) {
+    sim_data <- readRDS(file=fit_propName)
+  } else{
+    print("Sorry, the file does not yet exist. This may take some time.")
+    fit_prop=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=TRUE, robust=TRUE)
+    saveRDS(fit, file=fit_propName)  
+  }
+  
   rownames(fit_prop)=model_data$word
   colnames(fit_prop)=c('fit', 'se', 'lwr', 'upr')
   dimnames(fit_prop)[[3]]=myPropVars
@@ -248,8 +261,7 @@ for (myvar in variables) {
     df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
     
-    # test
-    plot_1 <- ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+    ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
       geom_text(size=3, nudge_x=3) +
@@ -266,7 +278,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar))
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
     dev.off()
   }
 
@@ -307,7 +319,7 @@ for (myvar in variables) {
   df_plot_obs=reshape2::melt(df_obs, id='word')
 
   if (plot_observed) {
-    plot_2 <- ggplot(df_plot_obs, aes(x=word, y=value)) +
+    ggplot(df_plot_obs, aes(x=word, y=value)) +
       geom_point() +
       scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
       coord_flip() +
@@ -317,7 +329,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar)) 
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
     dev.off()
   }
 
@@ -402,7 +414,7 @@ for (myvar in variables) {
     df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
 
-    plot_3 <- ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
+    ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
       geom_text(size=3, nudge_x=3) +
@@ -419,10 +431,10 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar)) 
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
     dev.off()
 
-    plot_4 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+    ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
       geom_point() +
       geom_errorbar(width=0) +
@@ -442,7 +454,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(filename=paste0(folder_fig, '/fit_', myvar))
+    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
     dev.off()
   }
 
