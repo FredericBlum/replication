@@ -261,8 +261,7 @@ for (myvar in variables) {
     df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
     
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
-    ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+    plot1 <- ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
       geom_text(size=3, nudge_x=3) +
@@ -279,7 +278,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
+    ggsave(plot1, filename=paste0(folder_fig, '/fit_', myvar, '.png'))
   }
 
   # How many languages & regions contain the phoneme(s) in question?
@@ -319,8 +318,7 @@ for (myvar in variables) {
   df_plot_obs=reshape2::melt(df_obs, id='word')
 
   if (plot_observed) {
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
-    ggplot(df_plot_obs, aes(x=word, y=value)) +
+    plot2 <- ggplot(df_plot_obs, aes(x=word, y=value)) +
       geom_point() +
       scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
       coord_flip() +
@@ -330,7 +328,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
+    ggsave(plot2, filename=paste0(folder_fig, '/fit_', myvar, '.png'))
   }
 
 
@@ -414,8 +412,7 @@ for (myvar in variables) {
     df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
 
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png')) 
-    ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
+    plot3 <- ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
       geom_text(size=3, nudge_x=3) +
@@ -432,10 +429,9 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
+    ggsave(plot3, filename=paste0(folder_fig, '/fit_', myvar, '.png'))
 
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
-    ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+    plot4 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
       geom_point() +
       geom_errorbar(width=0) +
@@ -455,7 +451,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    dev.off()
+    ggsave(plot4, filename=paste0(folder_fig, '/fit_', myvar, '.png'))
   }
 
   write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))

@@ -7,4 +7,4 @@
 #SBATCH --partition dlcegpu
 #SBATCH -w dlcenode02
 
-xvfb-run Rscript --verbose 02_models.R
+xvfb-run Rscript --verbose 02_models_gg.R
