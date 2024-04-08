@@ -247,7 +247,8 @@ for (myvar in variables) {
     df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
     df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
     df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
-
+    
+    # test
     plot_1 <- ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
       geom_point() +
       geom_errorbar(width=0) +
@@ -255,9 +256,9 @@ for (myvar in variables) {
       scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
       scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
       scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
-      # geom_hline(yintercept=0, linetype=3) +
+      geom_hline(yintercept=0, linetype=3) +
       geom_hline(yintercept=threshold, linetype=2) +
-      geom_hline(yintercept=-threshold, linetype=2) +
+      geom_hline(yintercept=-threshold, linetype=2) #+
       coord_flip() +
       facet_wrap(~group, ncol=n_levels) +
       theme_bw() +
@@ -265,7 +266,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(plot_1, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
+    png(filename=paste0(folder_fig, '/fit_', myvar))
     dev.off()
   }
 
@@ -316,7 +317,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(plot_2, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
+    png(filename=paste0(folder_fig, '/fit_', myvar)) 
     dev.off()
   }
 
@@ -418,7 +419,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(plot_3, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
+    png(filename=paste0(folder_fig, '/fit_', myvar)) 
     dev.off()
 
     plot_4 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
@@ -441,7 +442,7 @@ for (myvar in variables) {
             axis.text.y=element_blank(),
             axis.ticks.y=element_blank(),
             legend.position='none')
-    png(plot_4, filename=paste0(folder_fig, '/fit_', myvar, '.png'), type='cairo')
+    png(filename=paste0(folder_fig, '/fit_', myvar))
     dev.off()
   }
 
