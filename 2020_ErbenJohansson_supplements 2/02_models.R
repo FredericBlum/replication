@@ -185,7 +185,7 @@ for (myvar in variables) {
     family='dirichlet',
     formula=
       respDir ~ 1 + (1|word) + (1|language) +
-      gp(longitude, latitude, by=region, gr=TRUE),
+      gp(longitude, latitude, gr=TRUE),
     prior=c(prior(gamma(1, 1), class=phi)),
     silent=0,
     backend='cmdstan',
@@ -193,31 +193,30 @@ for (myvar in variables) {
     iter=20, warmup=10, chains=1, cores=1
     )
 
-  # Save fitted data
-  model_data <- 
+  new_data <- tibble(word=levels(model_data$word),
+                     latitude=0, longitude=150)
   fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
   if (file.exists(fit_name)) {
     fit <- readRDS(file=fit_name)
   } else{
     print("Sorry, the file does not yet exist. This may take some time.")
-    fit=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=FALSE)
+    fit=fitted(mod, newdata=new_data, re_formula='~(1|word)', summary=FALSE)
     saveRDS(fit, file=fit_name)  
   }
 
-  # # dim(fit)  # rows=MCMC, columns=words, dim3=levels of myvar
-  #
-  # # Save fitted proportions per word
+  # dim(fit)  # rows=MCMC, columns=words, dim3=levels of myvar
+  # Save fitted proportions per word
   
   fit_propName=paste0(folder_data_derived, '/repl2024_fitProp_', myvar, '.rds')
   if (file.exists(fit_propName)) {
     fit_prop <- readRDS(file=fit_propName)
   } else{
     print("Sorry, the file does not yet exist. This may take some time.")
-    fit_prop=fitted(mod, newdata=model_data, re_formula='~(1|word)', summary=TRUE, robust=TRUE)
-    saveRDS(fit_prop, file=fit_propName)  
+    fit_prop=fitted(mod, newdata=new_data, re_formula='~(1|word)', summary=TRUE, robust=TRUE)
+    saveRDS(fit_prop, file=fit_propName)
   }
   
-  rownames(fit_prop)=model_data$word
+  rownames(fit_prop)=levels(model_data$word)
   colnames(fit_prop)=c('fit', 'se', 'lwr', 'upr')
   dimnames(fit_prop)[[3]]=myPropVars
   fit_prop_df=NULL
@@ -256,32 +255,32 @@ for (myvar in variables) {
   head(df_plot)
 
   # Plotting fitted values
-  if (FALSE) {
-    df_plot_copy=df_plot
-    df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
-    df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
-    df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
-    
-    png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
-    ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
-      geom_point() +
-      geom_errorbar(width=0) +
-      geom_text(size=3, nudge_x=3) +
-      scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
-      scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-      scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
-      geom_hline(yintercept=0, linetype=3) +
-      geom_hline(yintercept=threshold, linetype=2) +
-      geom_hline(yintercept=-threshold, linetype=2) +
-      coord_flip() +
-      facet_wrap(~group, ncol=n_levels) +
-      theme_bw() +
-      theme(panel.grid=element_blank(),
-            axis.text.y=element_blank(),
-            axis.ticks.y=element_blank(),
-            legend.position='none')
-  }
-  dev.off()
+  # if (FALSE) {
+  #   df_plot_copy=df_plot
+  #   df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
+  #   df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
+  #   df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
+  #   
+  #   png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
+  #   ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+  #     geom_point() +
+  #     geom_errorbar(width=0) +
+  #     geom_text(size=3, nudge_x=3) +
+  #     scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
+  #     scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+  #     scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
+  #     geom_hline(yintercept=0, linetype=3) +
+  #     geom_hline(yintercept=threshold, linetype=2) +
+  #     geom_hline(yintercept=-threshold, linetype=2) +
+  #     coord_flip() +
+  #     facet_wrap(~group, ncol=n_levels) +
+  #     theme_bw() +
+  #     theme(panel.grid=element_blank(),
+  #           axis.text.y=element_blank(),
+  #           axis.ticks.y=element_blank(),
+  #           legend.position='none')
+  # }
+  # dev.off()
   
   # How many languages & regions contain the phoneme(s) in question?
   for (i in 1:nrow(df_plot)) {
@@ -319,20 +318,20 @@ for (myvar in variables) {
   # colMeans(df_obs_OR[, 2:ncol(df_obs_OR)])
   df_plot_obs=reshape2::melt(df_obs, id='word')
 
-  if (plot_observed==TRUE) {
-    png(filename=paste0(folder_fig, '/fit_obs_', myvar, '.png')) 
-    ggplot(df_plot_obs, aes(x=word, y=value)) +
-      geom_point() +
-      scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-      coord_flip() +
-      facet_wrap(~variable, ncol=n_levels) +
-      theme_bw() +
-      theme(panel.grid=element_blank(),
-            axis.text.y=element_blank(),
-            axis.ticks.y=element_blank(),
-            legend.position='none')
-  }
-  dev.off()
+  # if (plot_observed==TRUE) {
+  #   png(filename=paste0(folder_fig, '/fit_obs_', myvar, '.png')) 
+  #   ggplot(df_plot_obs, aes(x=word, y=value)) +
+  #     geom_point() +
+  #     scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+  #     coord_flip() +
+  #     facet_wrap(~variable, ncol=n_levels) +
+  #     theme_bw() +
+  #     theme(panel.grid=element_blank(),
+  #           axis.text.y=element_blank(),
+  #           axis.ticks.y=element_blank(),
+  #           legend.position='none')
+  # }
+  # dev.off()
 
   ## OBSERVED FREQUENCIES PER CARDINAL
   # Count proportions of cardinal sounds in each word: pretty slow (~6 min),
