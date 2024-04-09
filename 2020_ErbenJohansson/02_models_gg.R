@@ -15,9 +15,8 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 # What are we modeling?
 # myvar='position'  # possible values: backness, height, roundedness, extreme, extreme_roundedness, manner, manner_voicing, position, position_voicing, voicing, vowelConsonant
 
-variables <- c('backness', 'height', 'roundedness', 'extreme',
-               'extreme_roundedness', 'manner', 'manner_voicing', 'position',
-               'position_voicing', 'voicing', 'vowelConsonant')
+variables <- c('backness', 'height', 'roundedness', 'extreme', 'extreme_roundedness', 'position',
+               'position_voicing', 'voicing' 'manner', 'manner_voicing',)
 
 for (myvar in variables) {
   grType=c('cardinal', 'gr35', 'gr60')[1]
