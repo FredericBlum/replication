@@ -1,5 +1,6 @@
-# Modeling: prepares a model-specific dataset, builds a dirichlet model, saves fitted and observed values converted to log-odds, saves the associated cardinal sounds, and saves model-specific plots
-
+# Modeling: prepares a model-specific dataset, builds a dirichlet model, 
+# saves fitted and observed values converted to log-odds,
+# saves the associated cardinal sounds, and saves model-specific plots
 library(brms)
 library(ggplot2)
 library(reshape2)
@@ -178,20 +179,40 @@ model_data %>% filter(is.na(id))
 model_data %>% filter(is.na(latitude))
 ## Model
 mod_name=paste0(folder_model, '/repl2024_', myvar, '.rds')
+get_prior(data=model_data, family='dirichlet',
+              formula=
+                respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE)
+              )
 
 mod <- brm(
   data=model_data,
   family='dirichlet',
   formula=
-    respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE),
-  prior=c(prior(gamma(1, 1), class=phi)),
+    respDir ~ 1 + (1|word) + (1|language) + 
+    gp(longitude, latitude, by=region, gr=TRUE),
+  prior=c(
+    # Log-odds prior
+    prior(gamma(1, 1), class=phi),
+    
+    # Intercept for each category
+    prior(normal(0, 1), class=Intercept, dpar = 'mu2'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
+    
+    # Standard deviations of intercepts and gp
+    prior(exponential(4), class=sd, dpar='mu2'),
+    prior(exponential(4), class=sd, dpar='mu3'),
+    prior(exponential(4), class=sdgp, dpar='mu2'),
+    prior(exponential(4), class=sdgp, dpar='mu3')
+    ),
   silent=0,
   backend='cmdstan',
   file=mod_name,
   iter=2000, warmup=1000, chains=4, cores=4
   )
 
-new_data <- tibble(word=levels(model_data$word), latitude=0, longitude=150)
+new_data <- tibble(word=levels(model_data$word),
+                   region='south_america',
+                   latitude=0, longitude=150)
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   fit <- readRDS(file=fit_name)
