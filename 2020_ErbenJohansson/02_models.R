@@ -19,7 +19,7 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 #                'extreme_roundedness', 'manner', 'manner_voicing', 'position',
 #                'position_voicing', 'voicing', 'vowelConsonant')
 
-myvar <- 'backness'
+myvar <- 'extreme'
 grType=c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
