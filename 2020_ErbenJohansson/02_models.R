@@ -13,13 +13,14 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 #############################
 ### CONTROL PARAMETERS
 #############################
-# What are we modeling?
+# What levels are we modeling?
+# 2: voicing, roundedness
+# 3: height, backness
 
-# variables <- c('backness', 'height', 'roundedness', 'extreme',
-#                'extreme_roundedness', 'manner', 'manner_voicing', 'position',
-#                'position_voicing', 'voicing', 'vowelConsonant')
+#                'extreme_roundedness', 'extreme', 'position',
+#                'position_voicing',
 
-myvar <- 'extreme'
+myvar <- 'roundedness'
 grType=c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -189,29 +190,29 @@ mod <- brm(
   family='dirichlet',
   formula=
     respDir ~ 1 + (1|word) + (1|language) + 
-    gp(longitude, latitude, by=region, gr=TRUE),
+    gp(longitude, latitude, gr=TRUE),
   prior=c(
     # Log-odds prior
     prior(gamma(1, 1), class=phi),
     
     # Intercept for each category
     prior(normal(0, 1), class=Intercept, dpar = 'mu2'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
     
     # Standard deviations of intercepts and gp
     prior(exponential(4), class=sd, dpar='mu2'),
-    prior(exponential(4), class=sd, dpar='mu3'),
+    # prior(exponential(4), class=sd, dpar='mu3'),
     prior(exponential(4), class=sdgp, dpar='mu2'),
-    prior(exponential(4), class=sdgp, dpar='mu3')
+    # prior(exponential(4), class=sdgp, dpar='mu3')
     ),
   silent=0,
   backend='cmdstan',
+  control=list(adapt_delta=0.85, max_treedepth=10),
   file=mod_name,
   iter=2000, warmup=1000, chains=4, cores=4
   )
 
 new_data <- tibble(word=levels(model_data$word),
-                   region='south_america',
                    latitude=0, longitude=150)
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
