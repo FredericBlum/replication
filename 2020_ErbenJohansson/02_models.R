@@ -8,6 +8,8 @@ library(soundgen)  # optional (only used to print estimated time left in some lo
 library(cmdstanr)
 library(dplyr)
 
+# setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+options(bitmapType="cairo")
 set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 
 #############################
@@ -16,7 +18,6 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
-
 
 # To-Do
 # 4: extreme
@@ -87,9 +88,9 @@ if (c < 1) {
     }
 
     if (simplex_in_one_column) {
-      # reformat the response simplex into a single column, so brm() can read it properly
+      # reformat the response simplex into a single column, so brm can read it properly
       respDir=as.matrix(out[, groupingVar_levels])
-      colnames(respDir)=1:ncol(respDir)  # otherwise brm() crashes if these vars contain '-', '_', etc.
+      colnames(respDir)=1:ncol(respDir)  # otherwise brm crashes if these vars contain '-', '_', etc.
       out$respDir=respDir
       out=out[, c('language', 'word', 'respDir')]
     }
@@ -154,7 +155,7 @@ df1$lang_word=paste0(df1$language, 'ж', df1$word)  # 'ж' because '_' etc can b
 myPropVars=levels(df1[, myvar])
 n_levels=length(myPropVars)
 
-# Reformat data into a format suitable for brm() - save on disk to save a few min
+# Reformat data into a format suitable for brm - save on disk to save a few min
 data_file=paste0(folder_data_derived, '/dirichlet_', myvar, '.rds')
 if (file.exists(data_file)) {
   data=readRDS(data_file)
@@ -215,7 +216,7 @@ mod <- brm(
     # Standard deviations of GP
     prior(exponential(4), class=sdgp, dpar='mu2'),
     prior(exponential(4), class=sdgp, dpar='mu3'),
-    prior(exponential(4), class=sdgp, dpar='mu4')
+    prior(exponential(4), class=sdgp, dpar='mu4'),
     prior(exponential(4), class=sdgp, dpar='mu5')
     ),
   silent=0,
@@ -439,14 +440,13 @@ df_plot$obs_OR=df_plot_obs_OR$value
 # or: apply(df_obs[, 2:ncol(df_obs)], 2, median)
 # cf: aggregate(fitProp_fit ~ group, df_plot, mean)
 
-png(filename=paste0(folder_fig, '/fit_1_', myvar, '.png'))
 if (plot_fitted) {
   df_plot_copy=df_plot
   df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
   df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
   df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
 
-  ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
+  fit_plot1 <- ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
     geom_point() +
     geom_errorbar(width=0) +
     geom_text(size=3, nudge_x=3) +
@@ -463,12 +463,9 @@ if (plot_fitted) {
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
           legend.position='none')
-}
-dev.off()
+	ggsave(filename=paste0(folder_fig, '/fit_1_', myvar, '.png'), fit_plot1)
 
-png(filename=paste0(folder_fig, '/fit_2_', myvar, '.png'))
-if (plot_fitted) {
-  ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+  fit_plot2 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
     geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
     geom_point() +
     geom_errorbar(width=0) +
@@ -488,7 +485,9 @@ if (plot_fitted) {
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
           legend.position='none')
+	
+	ggsave(filename=paste0(folder_fig, '/fit_2_', myvar, '.png'), fit_plot2)
 }
-dev.off()
+
 
 write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))
