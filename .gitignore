@@ -1,5 +1,5 @@
 *Rproj
 *.DS_Store
 .Rproj.user
-models/
+*rds
 lexibank-analysed/

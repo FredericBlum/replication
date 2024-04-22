@@ -25,7 +25,7 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'position'
+myvar <- 'voicing'
 grType=c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -202,36 +202,36 @@ mod <- brm(
     
     # Intercept for each category
     prior(normal(0, 1), class=Intercept, dpar = 'mu2'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu4'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu5'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu6'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu7'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu8'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu9'),
-    prior(normal(0, 1), class=Intercept, dpar = 'mu10'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu4'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu5'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu6'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu7'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu8'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu9'),
+    # prior(normal(0, 1), class=Intercept, dpar = 'mu10'),
     
     # Standard deviations of intercepts
     prior(exponential(5), class=sd, dpar='mu2'),
-    prior(exponential(5), class=sd, dpar='mu3'),
-    prior(exponential(5), class=sd, dpar='mu4'),
-    prior(exponential(5), class=sd, dpar='mu5'),
-    prior(exponential(5), class=sd, dpar='mu6'),
-    prior(exponential(5), class=sd, dpar='mu7'),
-    prior(exponential(5), class=sd, dpar='mu8'),
-    prior(exponential(5), class=sd, dpar='mu9'),
-    prior(exponential(5), class=sd, dpar='mu10'),
+    # prior(exponential(5), class=sd, dpar='mu3'),
+    # prior(exponential(5), class=sd, dpar='mu4'),
+    # prior(exponential(5), class=sd, dpar='mu5'),
+    # prior(exponential(5), class=sd, dpar='mu6'),
+    # prior(exponential(5), class=sd, dpar='mu7'),
+    # prior(exponential(5), class=sd, dpar='mu8'),
+    # prior(exponential(5), class=sd, dpar='mu9'),
+    # prior(exponential(5), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
-    prior(exponential(8), class=sdgp, dpar='mu2'),
-    prior(exponential(8), class=sdgp, dpar='mu3'),
-    prior(exponential(8), class=sdgp, dpar='mu4'),
-    prior(exponential(8), class=sdgp, dpar='mu5'),
-    prior(exponential(8), class=sdgp, dpar='mu6'),
-    prior(exponential(8), class=sdgp, dpar='mu7'),
-    prior(exponential(8), class=sdgp, dpar='mu8'),
-    prior(exponential(8), class=sdgp, dpar='mu9'),
-    prior(exponential(8), class=sdgp, dpar='mu10')
+    prior(exponential(8), class=sdgp, dpar='mu2')#,
+    # prior(exponential(8), class=sdgp, dpar='mu3'),
+    # prior(exponential(8), class=sdgp, dpar='mu4'),
+    # prior(exponential(8), class=sdgp, dpar='mu5'),
+    # prior(exponential(8), class=sdgp, dpar='mu6'),
+    # prior(exponential(8), class=sdgp, dpar='mu7'),
+    # prior(exponential(8), class=sdgp, dpar='mu8'),
+    # prior(exponential(8), class=sdgp, dpar='mu9'),
+    # prior(exponential(8), class=sdgp, dpar='mu10')
     ),
   silent=0,
   backend='cmdstan',
