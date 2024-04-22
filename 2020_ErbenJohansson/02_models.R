@@ -8,7 +8,6 @@ library(soundgen)  # optional (only used to print estimated time left in some lo
 library(cmdstanr)
 library(dplyr)
 
-# setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 options(bitmapType="cairo")
 set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 
