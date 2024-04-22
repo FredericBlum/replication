@@ -25,8 +25,7 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-
-myvar <- 'extreme_roundedness'
+myvar <- 'position'
 grType=c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -209,30 +208,36 @@ mod <- brm(
     prior(normal(0, 1), class=Intercept, dpar = 'mu6'),
     prior(normal(0, 1), class=Intercept, dpar = 'mu7'),
     prior(normal(0, 1), class=Intercept, dpar = 'mu8'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu9'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu10'),
     
     # Standard deviations of intercepts
-    prior(exponential(4), class=sd, dpar='mu2'),
-    prior(exponential(4), class=sd, dpar='mu3'),
-    prior(exponential(4), class=sd, dpar='mu4'),
-    prior(exponential(4), class=sd, dpar='mu5'),
-    prior(exponential(4), class=sd, dpar='mu6'),
-    prior(exponential(4), class=sd, dpar='mu7'),
-    prior(exponential(4), class=sd, dpar='mu8'),
+    prior(exponential(5), class=sd, dpar='mu2'),
+    prior(exponential(5), class=sd, dpar='mu3'),
+    prior(exponential(5), class=sd, dpar='mu4'),
+    prior(exponential(5), class=sd, dpar='mu5'),
+    prior(exponential(5), class=sd, dpar='mu6'),
+    prior(exponential(5), class=sd, dpar='mu7'),
+    prior(exponential(5), class=sd, dpar='mu8'),
+    prior(exponential(5), class=sd, dpar='mu9'),
+    prior(exponential(5), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
-    prior(exponential(4), class=sdgp, dpar='mu2'),
-    prior(exponential(4), class=sdgp, dpar='mu3'),
-    prior(exponential(4), class=sdgp, dpar='mu4'),
-    prior(exponential(4), class=sdgp, dpar='mu5'),
-    prior(exponential(4), class=sdgp, dpar='mu6'),
-    prior(exponential(4), class=sdgp, dpar='mu7'),
-    prior(exponential(4), class=sdgp, dpar='mu8')
+    prior(exponential(8), class=sdgp, dpar='mu2'),
+    prior(exponential(8), class=sdgp, dpar='mu3'),
+    prior(exponential(8), class=sdgp, dpar='mu4'),
+    prior(exponential(8), class=sdgp, dpar='mu5'),
+    prior(exponential(8), class=sdgp, dpar='mu6'),
+    prior(exponential(8), class=sdgp, dpar='mu7'),
+    prior(exponential(8), class=sdgp, dpar='mu8'),
+    prior(exponential(8), class=sdgp, dpar='mu9'),
+    prior(exponential(8), class=sdgp, dpar='mu10')
     ),
   silent=0,
   backend='cmdstan',
-  control=list(adapt_delta=0.85, max_treedepth=10),
+  control=list(adapt_delta=0.90, max_treedepth=10),
   file=mod_name,
-  iter=2000, warmup=1000, chains=4, cores=4
+  iter=5000, warmup=2500, chains=4, cores=4
   )
 
 new_data <- tibble(word=levels(model_data$word),
@@ -497,6 +502,5 @@ if (plot_fitted) {
 	
 	ggsave(filename=paste0(folder_fig, '/fit_2_', myvar, '.png'), fit_plot2)
 }
-
 
 write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))

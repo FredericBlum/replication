@@ -1,6 +1,5 @@
 # Compiles a pooled table of fitted values from all models and plots them
 
-setwd('/home/allgoodguys/Documents/Studying/Lund_PhD/epistles/012_niklas_corpus')
 library(ggplot2)
 
 ## Load data
@@ -156,9 +155,9 @@ for (plotType in c('all', 'vwl', 'cons')) {
     theme(panel.grid = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          legend.position = ifelse(plotType == 'all', 'none', c(.8, .2)))
+          legend.position.inside = ifelse(plotType == 'all', 'none', c(.8, .2)))
   
-  ggsave(filename = paste0('pix_june2019/summary_', threshold, '_', plotType, '.png'), width = ifelse(plotType == 'all', 30, 20), height = ifelse(plotType == 'all', 21, 20), units = 'cm', dpi = 300, scale = 1)
+  ggsave(filename = paste0('pix_repl2024/summary_', threshold, '_', plotType, '.png'), width = ifelse(plotType == 'all', 30, 20), height = ifelse(plotType == 'all', 21, 20), units = 'cm', dpi = 300, scale = 1)
 }
 
 
@@ -206,14 +205,13 @@ plotme = function(groups) {
           axis.ticks.y = element_blank(),
           legend.position = 'none')
   
-  filename = paste0('pix_june2019/two_columns/', paste0(groups, collapse = '-'), '.png')
+  filename = paste0('pix_repl2024/two_columns/', paste0(groups, collapse = '-'), '.png')
   ggsave(filename = filename, width = 20, height = max(row_height[groups]) / 3 + 4, units = 'cm', dpi = 300, scale = 1.2)
 }
 
 sort(row_height)
-plotme(c('position', 'position-voicing'))
-plotme(c('manner', 'manner-voicing'))
+# plotme(c('position', 'position-voicing'))
+# plotme(c('manner', 'manner-voicing'))
 plotme(c('height', 'extreme'))
 plotme(c('backness', 'extreme-roundedness'))
 plotme(c('voicing', 'roundedness'))
-
