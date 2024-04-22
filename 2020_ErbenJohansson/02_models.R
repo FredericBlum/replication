@@ -4,12 +4,12 @@
 library(brms)
 library(ggplot2)
 library(reshape2)
-library(soundgen)  # optional (only used to print estimated time left in some loops)
 library(cmdstanr)
 library(dplyr)
 
+
 options(bitmapType="cairo")
-set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
+set_cmdstan_path(path="/data/users/blum/tools/cmdstan-2.32.2-threaded/")
 
 #############################
 ### CONTROL PARAMETERS
@@ -17,14 +17,12 @@ set_cmdstan_path(path="/data/tools/stan/cmdstan-2.32.2/")
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
-
-# To-Do
 # 4: extreme
 # 5: position
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'voicing'
+myvar <- 'height'
 grType=c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -59,7 +57,7 @@ if (c < 1) {
     return(x / (1 - x))
   }
 
-  countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column, reportEvery=NULL) {
+  countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column) {
     # set up the new dataframe
     out=data.frame(lang_word=unique(dataSource$lang_word), language=NA, word=NA, stringsAsFactors=FALSE)
     groupingVar_levels=levels(dataSource[, groupingVar])
@@ -80,9 +78,6 @@ if (c < 1) {
       m=which.max(temp2)
       temp2[m]=1 - sum(temp2[-m])  # make sure they sum exactly to 1 by (very slightly) adjusting the largest %
       out[i, groupingVar_levels]=temp2
-      if (is.numeric(reportEvery)) {
-        try(soundgen:::reportTime(i, nr, time_start=time_start, reportEvery=10000))
-      }
     }
 
     if (simplex_in_one_column) {
@@ -159,14 +154,13 @@ if (file.exists(data_file)) {
   data=readRDS(data_file)
 } else {
   data=countBy(groupingVar=myvar, normBy=mv, dataSource=df1,
-                 simplex_in_one_column=TRUE, reportEvery=10000)
+                 simplex_in_one_column=TRUE)
   saveRDS(data, data_file)
 }
 head(data)
 
 
 # Add info about coordinates
-library(dplyr)
 langs <- read.csv('languoid.csv') %>%
   select(iso639P3code, latitude, longitude, id)
 
@@ -201,7 +195,7 @@ mod <- brm(
     
     # Intercept for each category
     prior(normal(0, 1), class=Intercept, dpar = 'mu2'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
     # prior(normal(0, 1), class=Intercept, dpar = 'mu4'),
     # prior(normal(0, 1), class=Intercept, dpar = 'mu5'),
     # prior(normal(0, 1), class=Intercept, dpar = 'mu6'),
@@ -212,7 +206,7 @@ mod <- brm(
     
     # Standard deviations of intercepts
     prior(exponential(5), class=sd, dpar='mu2'),
-    # prior(exponential(5), class=sd, dpar='mu3'),
+    prior(exponential(5), class=sd, dpar='mu3'),
     # prior(exponential(5), class=sd, dpar='mu4'),
     # prior(exponential(5), class=sd, dpar='mu5'),
     # prior(exponential(5), class=sd, dpar='mu6'),
@@ -222,8 +216,8 @@ mod <- brm(
     # prior(exponential(5), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
-    prior(exponential(8), class=sdgp, dpar='mu2')#,
-    # prior(exponential(8), class=sdgp, dpar='mu3'),
+    prior(exponential(8), class=sdgp, dpar='mu2'),
+    prior(exponential(8), class=sdgp, dpar='mu3')#,
     # prior(exponential(8), class=sdgp, dpar='mu4'),
     # prior(exponential(8), class=sdgp, dpar='mu5'),
     # prior(exponential(8), class=sdgp, dpar='mu6'),
@@ -233,7 +227,7 @@ mod <- brm(
     # prior(exponential(8), class=sdgp, dpar='mu10')
     ),
   silent=0,
-  backend='cmdstan',
+  backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
   file=mod_name,
   iter=5000, warmup=2500, chains=4, cores=4
@@ -388,7 +382,7 @@ if (file.exists(card_file)) {
   card_table=read.csv(card_file)
 } else {
   df_card=countBy(groupingVar=grType, normBy=mv, dataSource=df1,
-                    simplex_in_one_column=FALSE, reportEvery=10000)
+                    simplex_in_one_column=FALSE)
   # head(df_card)
   card_levels=levels(df1[, grType])
 
