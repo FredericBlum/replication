@@ -204,31 +204,32 @@ mod <- brm(
     # prior(normal(0, 1), class=Intercept, dpar = 'mu10'),
     
     # Standard deviations of intercepts
-    prior(exponential(5), class=sd, dpar='mu2'),
-    #prior(exponential(5), class=sd, dpar='mu3'),
-    # prior(exponential(5), class=sd, dpar='mu4'),
-    # prior(exponential(5), class=sd, dpar='mu5'),
-    # prior(exponential(5), class=sd, dpar='mu6'),
-    # prior(exponential(5), class=sd, dpar='mu7'),
-    # prior(exponential(5), class=sd, dpar='mu8'),
-    # prior(exponential(5), class=sd, dpar='mu9'),
-    # prior(exponential(5), class=sd, dpar='mu10'),
+    prior(gamma(1, 10), class=sd, dpar='mu2'),
+    #prior(gamma(1, 10), class=sd, dpar='mu3'),
+    # prior(gamma(1, 10), class=sd, dpar='mu4'),
+    # prior(gamma(1, 10), class=sd, dpar='mu5'),
+    # prior(gamma(1, 10), class=sd, dpar='mu6'),
+    # prior(gamma(1, 10), class=sd, dpar='mu7'),
+    # prior(gamma(1, 10), class=sd, dpar='mu8'),
+    # prior(gamma(1, 10), class=sd, dpar='mu9'),
+    # prior(gamma(1, 10), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
-    prior(exponential(8), class=sdgp, dpar='mu2')#,
-    #prior(exponential(8), class=sdgp, dpar='mu3')#,
-    # prior(exponential(8), class=sdgp, dpar='mu4'),
-    # prior(exponential(8), class=sdgp, dpar='mu5'),
-    # prior(exponential(8), class=sdgp, dpar='mu6'),
-    # prior(exponential(8), class=sdgp, dpar='mu7'),
-    # prior(exponential(8), class=sdgp, dpar='mu8'),
-    # prior(exponential(8), class=sdgp, dpar='mu9'),
-    # prior(exponential(8), class=sdgp, dpar='mu10')
+    prior(gamma(3, 30), class=sdgp, dpar='mu2')#,
+    #prior(gamma(3, 30), class=sdgp, dpar='mu3')#,
+    # prior(gamma(3, 30), class=sdgp, dpar='mu4'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu5'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu6'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu7'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu8'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu9'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu10')
     ),
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
   file=mod_name,
+  threads=threading(4),
   iter=5000, warmup=2500, chains=4, cores=4
   )
 
