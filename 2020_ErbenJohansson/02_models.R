@@ -7,7 +7,6 @@ library(reshape2)
 library(cmdstanr)
 library(dplyr)
 
-
 options(bitmapType="cairo")
 
 #############################
@@ -21,7 +20,7 @@ options(bitmapType="cairo")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'roundedness'
+myvar <- 'position_voicing'
 grType=c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -177,64 +176,66 @@ model_data %>% filter(is.na(id))
 model_data %>% filter(is.na(latitude))
 ## Model
 mod_name=paste0(folder_model, '/repl2024_', myvar, '.rds')
-get_prior(data=model_data, family='dirichlet',
-              formula=
-                respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE)
-              )
+
+# get_prior(data=model_data, family='dirichlet',
+#               formula=
+#                 respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE, by=region)
+#               )
 
 mod <- brm(
   data=model_data,
   family='dirichlet',
   formula=
     respDir ~ 1 + (1|word) + (1|language) + 
-    gp(longitude, latitude, gr=TRUE),
+    gp(longitude, latitude, gr=TRUE, by=region),
   prior=c(
     # Log-odds prior
     prior(gamma(1, 1), class=phi),
     
     # Intercept for each category
     prior(normal(0, 1), class=Intercept, dpar = 'mu2'),
-    #prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu4'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu5'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu6'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu7'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu8'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu9'),
-    # prior(normal(0, 1), class=Intercept, dpar = 'mu10'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu3'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu4'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu5'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu6'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu7'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu8'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu9'),
+    prior(normal(0, 1), class=Intercept, dpar = 'mu10'),
     
     # Standard deviations of intercepts
     prior(gamma(1, 10), class=sd, dpar='mu2'),
-    #prior(gamma(1, 10), class=sd, dpar='mu3'),
-    # prior(gamma(1, 10), class=sd, dpar='mu4'),
-    # prior(gamma(1, 10), class=sd, dpar='mu5'),
-    # prior(gamma(1, 10), class=sd, dpar='mu6'),
-    # prior(gamma(1, 10), class=sd, dpar='mu7'),
-    # prior(gamma(1, 10), class=sd, dpar='mu8'),
-    # prior(gamma(1, 10), class=sd, dpar='mu9'),
-    # prior(gamma(1, 10), class=sd, dpar='mu10'),
+    prior(gamma(1, 10), class=sd, dpar='mu3'),
+    prior(gamma(1, 10), class=sd, dpar='mu4'),
+    prior(gamma(1, 10), class=sd, dpar='mu5'),
+    prior(gamma(1, 10), class=sd, dpar='mu6'),
+    prior(gamma(1, 10), class=sd, dpar='mu7'),
+    prior(gamma(1, 10), class=sd, dpar='mu8'),
+    prior(gamma(1, 10), class=sd, dpar='mu9'),
+    prior(gamma(1, 10), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
-    prior(gamma(3, 30), class=sdgp, dpar='mu2')#,
-    #prior(gamma(3, 30), class=sdgp, dpar='mu3')#,
-    # prior(gamma(3, 30), class=sdgp, dpar='mu4'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu5'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu6'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu7'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu8'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu9'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu10')
+    prior(gamma(1, 10), class=sdgp, dpar='mu2'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu3'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu4'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu5'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu6'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu7'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu8'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu9'),
+    prior(gamma(1, 10), class=sdgp, dpar='mu10')
     ),
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
   file=mod_name,
-  threads=threading(4),
+  threads=threading(25),
   iter=5000, warmup=2500, chains=4, cores=4
   )
 
 new_data <- tibble(word=levels(model_data$word),
                    latitude=0, longitude=150)
+
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   fit <- readRDS(file=fit_name)
