@@ -22,7 +22,7 @@ options(bitmapType="cairo")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'extreme_roundedness'
+myvar <- 'roundedness'
 grType <- c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels <- FALSE  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -164,34 +164,34 @@ mod <- brm(
     
     # Intercept for each category
     prior(normal(0, 0.5), class=Intercept, dpar = 'mu2'),
-    prior(normal(0, 0.5), class=Intercept, dpar = 'mu3'),
-    prior(normal(0, 0.5), class=Intercept, dpar = 'mu4'),
-    prior(normal(0, 0.5), class=Intercept, dpar = 'mu5'),
-    prior(normal(0, 0.5), class=Intercept, dpar = 'mu6'),
-    prior(normal(0, 0.5), class=Intercept, dpar = 'mu7'),
-    prior(normal(0, 0.5), class=Intercept, dpar = 'mu8'),
+    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu3'),
+    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu4'),
+    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu5'),
+    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu6'),
+    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu7'),
+    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu8'),
     #prior(normal(0, 0.5), class=Intercept, dpar = 'mu9'),
     #prior(normal(0, 0.5), class=Intercept, dpar = 'mu10'),
     
     # Standard deviations of intercepts
     prior(gamma(3, 30), class=sd, dpar='mu2'),
-    prior(gamma(3, 30), class=sd, dpar='mu3'),
-    prior(gamma(3, 30), class=sd, dpar='mu4'),
-    prior(gamma(3, 30), class=sd, dpar='mu5'),
-    prior(gamma(3, 30), class=sd, dpar='mu6'),
-    prior(gamma(3, 30), class=sd, dpar='mu7'),
-    prior(gamma(3, 30), class=sd, dpar='mu8'),
+    # prior(gamma(3, 30), class=sd, dpar='mu3'),
+    # prior(gamma(3, 30), class=sd, dpar='mu4'),
+    # prior(gamma(3, 30), class=sd, dpar='mu5'),
+    # prior(gamma(3, 30), class=sd, dpar='mu6'),
+    # prior(gamma(3, 30), class=sd, dpar='mu7'),
+    # prior(gamma(3, 30), class=sd, dpar='mu8'),
     #prior(gamma(3, 30), class=sd, dpar='mu9'),
     #prior(gamma(3, 30), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
     prior(gamma(3, 30), class=sdgp, dpar='mu2'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu3'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu4'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu5'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu6'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu7'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu8')#,
+    # prior(gamma(3, 30), class=sdgp, dpar='mu3'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu4'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu5'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu6'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu7'),
+    # prior(gamma(3, 30), class=sdgp, dpar='mu8')#,
     #prior(gamma(3, 30), class=sdgp, dpar='mu9'),
     #prior(gamma(3, 30), class=sdgp, dpar='mu10')
     ),
