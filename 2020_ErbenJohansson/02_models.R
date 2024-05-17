@@ -148,8 +148,8 @@ langs <- read.csv('languoid.csv') %>% select(iso639P3code, latitude, longitude, 
 lang_info <- df1 %>% select(language, iso, region) %>% unique()
 
 model_data <- data %>% left_join(lang_info) %>%
-  left_join(langs, by=join_by(iso==iso639P3code))
-
+  left_join(langs, by=join_by(iso==iso639P3code)) 
+model_data$word
 
 ## Model
 mod_name=paste0(folder_model, '/repl2024_', myvar, '.rds')
@@ -203,7 +203,7 @@ mod <- brm(
   iter=5000, warmup=2500, chains=4, cores=4
   )
 
-new_data <- tibble(word=levels(model_data$word), latitude=0, longitude=150)
+new_data <- tibble(word=unique(model_data$word), latitude=0, longitude=150)
 
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
@@ -226,7 +226,7 @@ if (file.exists(fit_propName)) {
   saveRDS(fit_prop, file=fit_propName)
 }
 
-rownames(fit_prop)=levels(model_data$word)
+rownames(fit_prop)=unique(model_data$word)
 colnames(fit_prop)=c('fit', 'se', 'lwr', 'upr')
 dimnames(fit_prop)[[3]]=myPropVars
 fit_prop_df=NULL
@@ -250,8 +250,7 @@ for (i in 1:nrow(fit)) {  # for each iteration in MCMC
 }
 
 # Set up a dataframe for storing fitted values (log-odds ratios per word and per level of myvar)
-df_plot=expand.grid(word=levels(data$word),
-                      group=myPropVars)
+df_plot=expand.grid(word=unique(data$word), group=myPropVars)
 df_plot[, c('fit', 'lwr', 'upr')]=NA
 for (w in 1:ncol(fit)) {
   word=df_plot$word[w]
@@ -264,42 +263,12 @@ for (w in 1:ncol(fit)) {
 df_plot$word_caps=as.factor(toupper(df_plot$word))
 head(df_plot)
 
-# Plotting fitted values
-# if (FALSE) {
-#   df_plot_copy=df_plot
-#   df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
-#   df_plot_copy$word=factor(df_plot_copy$word, levels=rev(levels(df_plot_copy$word)))
-#   df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word), '')
-#   
-#   png(filename=paste0(folder_fig, '/fit_', myvar, '.png'))
-#   ggplot(df_plot_copy, aes(x=word, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
-#     geom_point() +
-#     geom_errorbar(width=0) +
-#     geom_text(size=3, nudge_x=3) +
-#     scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
-#     scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-#     scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
-#     geom_hline(yintercept=0, linetype=3) +
-#     geom_hline(yintercept=threshold, linetype=2) +
-#     geom_hline(yintercept=-threshold, linetype=2) +
-#     coord_flip() +
-#     facet_wrap(~group, ncol=n_levels) +
-#     theme_bw() +
-#     theme(panel.grid=element_blank(),
-#           axis.text.y=element_blank(),
-#           axis.ticks.y=element_blank(),
-#           legend.position='none')
-# }
-# dev.off()
-
 # How many languages & regions contain the phoneme(s) in question?
 for (i in 1:nrow(df_plot)) {
-  idx=which(df1$word == as.character(df_plot$word[i]) &
-                df1[, myvar] == as.character(df_plot$group[i]))
+  idx=which(df1$word == as.character(df_plot$word[i]) & df1[, myvar] == as.character(df_plot$group[i]))
   df_plot$nLangs[i]=length(unique(df1$language[idx]))
   df_plot$nRegions[i]=length(unique(df1$region[idx]))
 }
-
 
 ## OBSERVED FREQUENCIES
 # Reformat the simplex column into a normal df
