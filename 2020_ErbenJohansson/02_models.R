@@ -22,7 +22,7 @@ options(bitmapType="cairo")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'voicing'
+myvar <- 'roundedness'
 grType <- c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels <- FALSE  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
@@ -108,11 +108,11 @@ unique(df[c("word", "language")]) %>% group_by(word) %>% count() %>% arrange(n)
 # Subset data: for vowel features, focus only on vowels; etc.
 if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'voicing')) {
   mySounds <- 'consonants'
-  df1 <- df %>% filter(vowelConsonant == 'consonant')
+  df1 <- df %>% filter(vowelConsonant == 'consonant') %>% droplevels()
   mv='nConsPerWord'
 } else if (myvar %in% c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness')) {
   mySounds='vowels'
-  df1 <- df %>% filter(vowelConsonant == 'vowel')
+  df1 <- df %>% filter(vowelConsonant == 'vowel') %>% droplevels()
   mv='nVowelsPerWord'
 }
 
@@ -148,7 +148,6 @@ lang_info <- df1 %>% select(language, iso, region) %>% unique()
 
 model_data <- data %>% left_join(lang_info) %>%
   left_join(langs, by=join_by(iso==iso639P3code)) 
-model_data$word
 
 ## Model
 mod_name=paste0(folder_model, '/repl2024_', myvar, '.rds')
