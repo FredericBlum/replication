@@ -54,10 +54,9 @@ odds=function(x) {
 }
 
 countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column) {
-  # groupingVar=myvar, normBy=mv, dataSource=df1, simplex_in_one_column=TRUE
   # set up the new dataframe
   out <- data.frame(lang_word=unique(dataSource$lang_word), language=NA, word=NA, stringsAsFactors=FALSE)
-  groupingVar_levels <- unique(dataSource[, groupingVar])
+  groupingVar_levels <- levels(dataSource[, groupingVar])
   out[, normBy] <- dataSource[match(out$lang_word, dataSource$lang_word), normBy]
   out[, groupingVar_levels] <- NA
 
@@ -89,8 +88,8 @@ countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column) {
 
 # load data
 df <- read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors = TRUE)
-ipa <- read_csv(paste0(folder_data, '/phonetic_groups.csv'))
-ipa$vowelConsonant <- ifelse(ipa$height != '', 'vowel')
+ipa <- read.csv(paste0(folder_data, '/phonetic_groups.csv'), stringsAsFactors = TRUE)
+ipa$vowelConsonant <- ifelse(ipa$height != '', 'vowel', 'consonant')
 
 # add phonetic info to the dataset
 includeVars <- c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness', 'manner', 'manner_voicing', 'position', 'position_voicing', 'voicing', 'vowelConsonant', 'gr35', 'gr60', 'cardinal')
@@ -109,7 +108,7 @@ unique(df[c("word", "language")]) %>% group_by(word) %>% count() %>% arrange(n)
 # Subset data: for vowel features, focus only on vowels; etc.
 if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'voicing')) {
   mySounds <- 'consonants'
-  df1 <- df %>% filter(is.na(vowelConsonant))
+  df1 <- df %>% filter(vowelConsonant == 'consonant')
   mv='nConsPerWord'
 } else if (myvar %in% c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness')) {
   mySounds='vowels'
