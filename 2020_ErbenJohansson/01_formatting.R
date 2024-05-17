@@ -1,12 +1,14 @@
 # Data preparation: converts the dataset in "full_dataset.csv" into the long format for modeling
+# Note FB: This script specifies the output format that the Lexibank data should have.
+library(dplyr)
 
 
-df = read.csv('data/full_dataset.csv')  
-ipa = read.csv('data/phonetic_groups.csv')
-vowels = ipa$unicode[ipa$height != '']
+df <-  read.csv('data/full_dataset.csv')  
+ipa <-  read.csv('data/phonetic_groups.csv')
+vowels <-  ipa$unicode[ipa$height != '']
 
-out_temp = vector('list', length = (nrow(df) - 1) * (ncol(df) - 1))
-counter = 1
+out_temp <-  vector('list', length = (nrow(df) - 1) * (ncol(df) - 1))
+counter <-  1
 for (i in 3:nrow(df)) {
   for (j in 2:ncol(df)) {
     temp = as.character(df[i, j])
@@ -20,19 +22,25 @@ for (i in 3:nrow(df)) {
         word = df$Language_name[i],
         sylIdx = 1:length(temp1),
         nPhonemesPerWord = nchar(temp),
-        nVowelsPerWord = sum(temp1 %in% vowels)
+        nVowelsPerWord = sum(temp1 %in% vowels),
+        nConsPerWord = sum(!(temp1 %in% vowels))
       )
     }
     counter = counter + 1
   }  
   print(paste('Done with word', i - 1, 'of', nrow(df) - 1))
 }
-out = as.data.frame(data.table::rbindlist(out_temp))  # MUCH faster than just do.call("rbind", out)
-out$nConsPerWord = out$nPhonemesPerWord - out$nVowelsPerWord
-head(out)
+
+out <-  tibble(data.table::rbindlist(out_temp))
+
+# Note FB: There seem to be some suspicious symbols though!
+# ! ( ) [ { § & % ¤ $ £ € ½
+# With Lexibank, CLTS will assure that this is not the case
+
+# head(out)
 # u = sort(as.character(unique(out$unicode)))  # make sure no suspicious symbols
 # cat(u)
-# # summary(out)
+# summary(out)
 # length(unique(out$unicode))  # 182 unicode characters
 # length(unique(out$word))     # 344 words
 

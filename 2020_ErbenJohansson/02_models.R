@@ -5,6 +5,7 @@ library(brms)
 library(ggplot2)
 library(reshape2)
 library(cmdstanr)
+library(readr)
 library(dplyr)
 
 options(bitmapType="cairo")
@@ -21,115 +22,99 @@ options(bitmapType="cairo")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'extreme_roundedness'
-grType=c('cardinal', 'gr35', 'gr60')[1]
-drop_rare_levels=c(TRUE, FALSE)[2]  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
+myvar <- 'position_voicing'
+grType <- c('cardinal', 'gr35', 'gr60')[1]
+drop_rare_levels <- FALSE  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
 # brms settings
-folder_model='models'  # path to folder for saving .rds files
+folder_model <- 'models'  # path to folder for saving .rds files
 
 # Where and how to save stuff
-folder_data='data'  # path to folder with original .csv files
-folder_data_derived='data_derived'  # path to folder with derived .csv files
-folder_fig='pix_repl2024'
+folder_data <- 'data'  # path to folder with original .csv files
+folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
+folder_fig <- 'pix_repl2024'
 
 # Plotting options
-plot_fitted=TRUE
 threshold=log2(1.20)  # for plot_fitted: 25% increased or decreased odds of finding the sound
-plot_observed=FALSE
 
 #############################
 ### END OF CONTROL PARAMETERS
 #############################
 
 # Load the main datasets and helper functions
-# (excutes only the first time the script is loaded)
-c=0
-if (c < 1) {
-  # Make sure all output folders exist
-  for (f in c(folder_data, folder_data_derived, folder_fig)) {
-    if (!dir.exists(f)) dir.create(f)
-  }
 
-  odds=function(x) {
-    # x[x >= 1]=.99  # cap odds at 100/1, otherwise bad for plotting
-    return(x / (1 - x))
-  }
-
-  countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column) {
-    # set up the new dataframe
-    out=data.frame(lang_word=unique(dataSource$lang_word), language=NA, word=NA, stringsAsFactors=FALSE)
-    groupingVar_levels=levels(dataSource[, groupingVar])
-    out[, normBy]=dataSource[match(out$lang_word, dataSource$lang_word), normBy]
-    out[, groupingVar_levels]=NA
-
-    # calculate phoneme class counts per word and lang
-    myt=unclass(table(dataSource[, groupingVar], dataSource$word, dataSource$language))
-
-    # for each word in data, transform counts to proportions
-    time_start=proc.time()
-    nr=nrow(out)
-    for (i in 1:nr) {
-      out[i, c('language', 'word')]=unlist(strsplit(out$lang_word[i], 'ж'))
-      temp=myt[, out$word[i], out$language[i]]
-      temp1=temp / out[i, normBy]  # proportion of the total number of vowels OR consonants OR phonemes in this word
-      temp2=temp1 / 1.002 + 0.001  # make sure there are no exact zeros or ones
-      m=which.max(temp2)
-      temp2[m]=1 - sum(temp2[-m])  # make sure they sum exactly to 1 by (very slightly) adjusting the largest %
-      out[i, groupingVar_levels]=temp2
-    }
-
-    if (simplex_in_one_column) {
-      # reformat the response simplex into a single column, so brm can read it properly
-      respDir=as.matrix(out[, groupingVar_levels])
-      colnames(respDir)=1:ncol(respDir)  # otherwise brm crashes if these vars contain '-', '_', etc.
-      out$respDir=respDir
-      out=out[, c('language', 'word', 'respDir')]
-    }
-
-    out$language=as.factor(out$language)
-    out$word=as.factor(out$word)
-    # head(out)
-    return(out)
-  }
-
-  # load data
-  df=read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors=TRUE)
-  ipa=read.csv(paste0(folder_data, '/phonetic_groups.csv'), stringsAsFactors=TRUE)
-  ipa$vowelConsonant=as.factor(ifelse(ipa$height != '', 'vowel', 'consonant'))
-
-  # add phonetic info to the dataset
-  includeVars=c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness', 'manner', 'manner_voicing', 'position', 'position_voicing', 'voicing', 'vowelConsonant', 'gr35', 'gr60', 'cardinal')
-  df[, includeVars]=ipa[match(df$unicode, ipa$unicode), includeVars]
-  c=c + 1
-  c=0
-  if (FALSE) {
-    # words that are uncommonly long/short or have a lot of missing values
-    a_length=aggregate(nPhonemesPerWord ~ word, df, mean)
-    a_length=a_length[order(a_length$nPhonemesPerWord), ]
-    head(a_length)
-    tail(a_length)
-
-    # words that have a lot of missing values (no word recorded from many langs)
-    a_miss=aggregate(language ~ word, df, function(x) length(unique(x)))
-    a_miss=a_miss[order(a_miss$language), ]
-    head(a_miss)
-  }
+# Make sure all output folders exist
+for (f in c(folder_data, folder_data_derived, folder_fig)) {
+  if (!dir.exists(f)) dir.create(f)
 }
+
+odds=function(x) {
+  # x[x >= 1]=.99  # cap odds at 100/1, otherwise bad for plotting
+  return(x / (1 - x))
+}
+
+countBy=function(groupingVar, normBy, dataSource, simplex_in_one_column) {
+  # groupingVar=myvar, normBy=mv, dataSource=df1, simplex_in_one_column=TRUE
+  # set up the new dataframe
+  out <- data.frame(lang_word=unique(dataSource$lang_word), language=NA, word=NA, stringsAsFactors=FALSE)
+  groupingVar_levels <- unique(dataSource[, groupingVar])
+  out[, normBy] <- dataSource[match(out$lang_word, dataSource$lang_word), normBy]
+  out[, groupingVar_levels] <- NA
+
+  # calculate phoneme class counts per word and lang
+  myt <- unclass(table(dataSource[, groupingVar], dataSource$word, dataSource$language))
+
+  # for each word in data, transform counts to proportions
+  time_start=proc.time()
+  nr=nrow(out)
+  for (i in 1:nr) {
+    out[i, c('language', 'word')]=unlist(strsplit(out$lang_word[i], 'ж'))
+    temp=myt[, out$word[i], out$language[i]]
+    temp1=temp / out[i, normBy]  # proportion of the total number of vowels OR consonants OR phonemes in this word
+    temp2=temp1 / 1.002 + 0.001  # make sure there are no exact zeros or ones
+    m=which.max(temp2)
+    temp2[m]=1 - sum(temp2[-m])  # make sure they sum exactly to 1 by (very slightly) adjusting the largest %
+    out[i, groupingVar_levels]=temp2
+  }
+
+  if (simplex_in_one_column) {
+    # reformat the response simplex into a single column, so brm can read it properly
+    respDir=as.matrix(out[, groupingVar_levels])
+    colnames(respDir)=1:ncol(respDir)  # otherwise brm crashes if these vars contain '-', '_', etc.
+    out$respDir=respDir
+    out=out[, c('language', 'word', 'respDir')]
+  }
+  return(out)
+}
+
+# load data
+df <- read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors = TRUE)
+ipa <- read_csv(paste0(folder_data, '/phonetic_groups.csv'))
+ipa$vowelConsonant <- ifelse(ipa$height != '', 'vowel')
+
+# add phonetic info to the dataset
+includeVars <- c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness', 'manner', 'manner_voicing', 'position', 'position_voicing', 'voicing', 'vowelConsonant', 'gr35', 'gr60', 'cardinal')
+df[, includeVars] <- ipa[match(df$unicode, ipa$unicode), includeVars]
+
+
+# words that are uncommonly long/short
+avg_length <- df %>% group_by(word) %>% summarize(mean=mean(nPhonemesPerWord))
+avg_length %>% arrange(mean)
+avg_length %>% arrange(-mean)
+
+# Coverage
+unique(df[c("word", "language")]) %>% group_by(word) %>% count() %>% arrange(n)
+
 
 # Subset data: for vowel features, focus only on vowels; etc.
 if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'voicing')) {
-  mySounds='consonants'
-  df1=droplevels(df[df$manner != '' & df[, myvar] != '', ])
+  mySounds <- 'consonants'
+  df1 <- df %>% filter(is.na(vowelConsonant))
   mv='nConsPerWord'
 } else if (myvar %in% c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness')) {
   mySounds='vowels'
-  df1=droplevels(df[df$manner == '' & df[, myvar] != '', ])
+  df1 <- df %>% filter(vowelConsonant == 'vowel')
   mv='nVowelsPerWord'
-} else if (myvar == 'vowelConsonant') {
-  mySounds='all'
-  df1=droplevels(df[myvar != '', ])
-  mv='nPhonemesPerWord'
 }
 
 if (drop_rare_levels) {
@@ -140,55 +125,39 @@ if (drop_rare_levels) {
   } else if (myvar == 'extreme_roundedness') {
     df1=droplevels(df1[!df1$extreme_roundedness %in% c('low-front-rounded', 'high-front-rounded'), ])
   }
-  # table(df1[, myvar])
 }
 
-df1$lang_word=paste0(df1$language, 'ж', df1$word)  # 'ж' because '_' etc can be found in values
-myPropVars=levels(df1[, myvar])
-n_levels=length(myPropVars)
+df1$lang_word <- paste0(df1$language, 'ж', df1$word)  # 'ж' because '_' etc can be found in values
+myPropVars <- unique(df1[, myvar])
+n_levels <- length(myPropVars)
 
 # Reformat data into a format suitable for brm - save on disk to save a few min
 data_file=paste0(folder_data_derived, '/dirichlet_', myvar, '.rds')
 if (file.exists(data_file)) {
   data=readRDS(data_file)
 } else {
-  data=countBy(groupingVar=myvar, normBy=mv, dataSource=df1,
-                 simplex_in_one_column=TRUE)
+  data=countBy(groupingVar=myvar, normBy=mv, dataSource=df1, simplex_in_one_column=TRUE)
   saveRDS(data, data_file)
 }
 head(data)
 
 
 # Add info about coordinates
-langs <- read.csv('languoid.csv') %>%
-  select(iso639P3code, latitude, longitude, id)
+langs <- read.csv('languoid.csv') %>% select(iso639P3code, latitude, longitude, id)
 
-lang_info <- df1 %>% select(language, iso, region) %>%
-  unique()
+lang_info <- df1 %>% select(language, iso, region) %>% unique()
 
 model_data <- data %>% left_join(lang_info) %>%
-  left_join(langs, by=join_by(iso==iso639P3code)) %>%
-  mutate(
-    latitude=as.numeric(latitude),
-    longitude=as.numeric(longitude)
-  )
+  left_join(langs, by=join_by(iso==iso639P3code))
 
-model_data %>% filter(is.na(id))
-model_data %>% filter(is.na(latitude))
+
 ## Model
 mod_name=paste0(folder_model, '/repl2024_', myvar, '.rds')
 
-# get_prior(data=model_data, family='dirichlet',
-#               formula=
-#                 respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE, by=region)
-#               )
-
 mod <- brm(
-  data=model_data,
-  family='dirichlet',
-  formula=
-    respDir ~ 1 + (1|word) + (1|language) + 
-    gp(longitude, latitude, gr=TRUE, by=region),
+  data = model_data,
+  family = 'dirichlet',
+  formula = respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE),
   prior=c(
     # Log-odds prior
     prior(gamma(1, 1), class=phi),
@@ -201,8 +170,8 @@ mod <- brm(
     prior(normal(0, 0.5), class=Intercept, dpar = 'mu6'),
     prior(normal(0, 0.5), class=Intercept, dpar = 'mu7'),
     prior(normal(0, 0.5), class=Intercept, dpar = 'mu8'),
-    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu9'),
-    # prior(normal(0, 0.5), class=Intercept, dpar = 'mu10'),
+    prior(normal(0, 0.5), class=Intercept, dpar = 'mu9'),
+    prior(normal(0, 0.5), class=Intercept, dpar = 'mu10'),
     
     # Standard deviations of intercepts
     prior(gamma(3, 30), class=sd, dpar='mu2'),
@@ -212,8 +181,8 @@ mod <- brm(
     prior(gamma(3, 30), class=sd, dpar='mu6'),
     prior(gamma(3, 30), class=sd, dpar='mu7'),
     prior(gamma(3, 30), class=sd, dpar='mu8'),
-    # prior(gamma(3, 30), class=sd, dpar='mu9'),
-    # prior(gamma(3, 30), class=sd, dpar='mu10'),
+    prior(gamma(3, 30), class=sd, dpar='mu9'),
+    prior(gamma(3, 30), class=sd, dpar='mu10'),
     
     # Standard deviations of GP
     prior(gamma(3, 30), class=sdgp, dpar='mu2'),
@@ -222,20 +191,19 @@ mod <- brm(
     prior(gamma(3, 30), class=sdgp, dpar='mu5'),
     prior(gamma(3, 30), class=sdgp, dpar='mu6'),
     prior(gamma(3, 30), class=sdgp, dpar='mu7'),
-    prior(gamma(3, 30), class=sdgp, dpar='mu8')#,
-    # prior(gamma(3, 30), class=sdgp, dpar='mu9'),
-    # prior(gamma(3, 30), class=sdgp, dpar='mu10')
+    prior(gamma(3, 30), class=sdgp, dpar='mu8'),
+    prior(gamma(3, 30), class=sdgp, dpar='mu9'),
+    prior(gamma(3, 30), class=sdgp, dpar='mu10')
     ),
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
   file=mod_name,
-  threads=threading(25),
+  threads=threading(18),
   iter=5000, warmup=2500, chains=4, cores=4
   )
 
-new_data <- tibble(word=levels(model_data$word),
-                   latitude=0, longitude=150)
+new_data <- tibble(word=levels(model_data$word), latitude=0, longitude=150)
 
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
@@ -360,20 +328,6 @@ df_plot_obs_OR=reshape2::melt(df_obs_OR, id='word')
 # colMeans(df_obs_OR[, 2:ncol(df_obs_OR)])
 df_plot_obs=reshape2::melt(df_obs, id='word')
 
-# if (plot_observed==TRUE) {
-#   png(filename=paste0(folder_fig, '/fit_obs_', myvar, '.png')) 
-#   ggplot(df_plot_obs, aes(x=word, y=value)) +
-#     geom_point() +
-#     scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-#     coord_flip() +
-#     facet_wrap(~variable, ncol=n_levels) +
-#     theme_bw() +
-#     theme(panel.grid=element_blank(),
-#           axis.text.y=element_blank(),
-#           axis.ticks.y=element_blank(),
-#           legend.position='none')
-# }
-# dev.off()
 
 ## OBSERVED FREQUENCIES PER CARDINAL
 # Count proportions of cardinal sounds in each word: pretty slow (~6 min),
@@ -449,53 +403,53 @@ df_plot$obs_OR=df_plot_obs_OR$value
 # or: apply(df_obs[, 2:ncol(df_obs)], 2, median)
 # cf: aggregate(fitProp_fit ~ group, df_plot, mean)
 
-if (plot_fitted) {
-  df_plot_copy=df_plot
-  df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
-  df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
-  df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
+# Plot fitted values
+df_plot_copy=df_plot
+df_plot_copy$dim=(df_plot_copy$lwr > threshold | df_plot_copy$upr < -threshold)
+df_plot_copy$word_caps=factor(df_plot_copy$word_caps, levels=rev(levels(df_plot_copy$word_caps)))
+df_plot_copy$word_dim=ifelse(df_plot_copy$dim, as.character(df_plot_copy$word_caps), '')
 
-  fit_plot1 <- ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
-    geom_point() +
-    geom_errorbar(width=0) +
-    geom_text(size=3, nudge_x=3) +
-    geom_point(aes(x=word_caps, y=obs), inherit.aes=FALSE, shape=4) +
-    scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
-    scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-    scale_y_continuous(limits=c(0, 1)) +
-    xlab('Concept') +
-    ylab('Proportion, %') +
-    coord_flip() +
-    facet_wrap(~group, ncol=n_levels) +
-    theme_bw() +
-    theme(panel.grid=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks.y=element_blank(),
-          legend.position='none')
-	ggsave(filename=paste0(folder_fig, '/fit_1_', myvar, '.png'), fit_plot1)
+fit_plot1 <- ggplot(df_plot_copy, aes(x=word_caps, y=fitProp_fit, ymin=fitProp_lwr, ymax=fitProp_upr, color=dim, label=word_dim)) +
+  geom_point() +
+  geom_errorbar(width=0) +
+  geom_text(size=3, nudge_x=3) +
+  geom_point(aes(x=word_caps, y=obs), inherit.aes=FALSE, shape=4) +
+  scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
+  scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+  scale_y_continuous(limits=c(0, 1)) +
+  xlab('Concept') +
+  ylab('Proportion, %') +
+  coord_flip() +
+  facet_wrap(~group, ncol=n_levels) +
+  theme_bw() +
+  theme(panel.grid=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.position='none')
+ggsave(filename=paste0(folder_fig, '/fit_1_', myvar, '.png'), fit_plot1)
 
-  fit_plot2 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
-    geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
-    geom_point() +
-    geom_errorbar(width=0) +
-    geom_text(size=3, nudge_x=3) +
-    scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
-    scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-    # scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
-    xlab('Concept') +
-    ylab('Log-odds ratio') +
-    geom_hline(yintercept=0, linetype=3) +
-    geom_hline(yintercept=threshold, linetype=2) +
-    geom_hline(yintercept=-threshold, linetype=2) +
-    coord_flip() +
-    facet_wrap(~group, ncol=n_levels) +
-    theme_bw() +
-    theme(panel.grid=element_blank(),
-          axis.text.y=element_blank(),
-          axis.ticks.y=element_blank(),
-          legend.position='none')
-	
-	ggsave(filename=paste0(folder_fig, '/fit_2_', myvar, '.png'), fit_plot2)
-}
+fit_plot2 <- ggplot(df_plot_copy, aes(x=word_caps, y=fit, ymin=lwr, ymax=upr, color=dim, label=word_dim)) +
+  geom_point(aes(x=word_caps, y=obs_OR), inherit.aes=FALSE, shape=4, size=.75) +
+  geom_point() +
+  geom_errorbar(width=0) +
+  geom_text(size=3, nudge_x=3) +
+  scale_color_manual(values=c(rgb(0, 0, 0, alpha=.1, maxColorValue=1), rgb(0, 0, 0, maxColorValue=1))) +
+  scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+  # scale_y_continuous(breaks=-5:5, labels=c(paste0('1/', 2^(5:1)), 1, 2^(1:5))) +
+  xlab('Concept') +
+  ylab('Log-odds ratio') +
+  geom_hline(yintercept=0, linetype=3) +
+  geom_hline(yintercept=threshold, linetype=2) +
+  geom_hline(yintercept=-threshold, linetype=2) +
+  coord_flip() +
+  facet_wrap(~group, ncol=n_levels) +
+  theme_bw() +
+  theme(panel.grid=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.position='none')
+
+ggsave(filename=paste0(folder_fig, '/fit_2_', myvar, '.png'), fit_plot2)
+
 
 write.csv(df_plot, paste0(folder_data_derived, '/', myvar, '.csv'))
