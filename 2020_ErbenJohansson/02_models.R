@@ -22,7 +22,7 @@ options(bitmapType="cairo")
 # 8: extreme_roundedness
 # 10: position_voicing
 
-myvar <- 'roundedness'
+myvar <- 'voicing'
 grType <- c('cardinal', 'gr35', 'gr60')[1]
 drop_rare_levels <- FALSE  # drop levels with very few observations (for manner_voicing, unvoiced laterals, vibrants, nasals; for position_voicing, remove voiced glottals)
 
