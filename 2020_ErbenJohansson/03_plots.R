@@ -139,7 +139,7 @@ for (plotType in c('all', 'vwl', 'cons')) {
     geom_hline(yintercept = -threshold_log, linetype = 3) +
     geom_hline(yintercept = 0, linetype = 2, color = 'gray70') +
     # annotate(geom = 'text', label = 'ROPE', x = -Inf, y = 0, vjust = 'bottom', size = 3) +
-    geom_errorbar(size = .5, width = 0) +
+    geom_errorbar(linewidth = .5, width = 0) +
     geom_point(shape = 21) +
     geom_text(aes(y = pos), nudge_x = 0.05, size = 2, hjust = hjust, vjust = 'bottom') +
     facet_wrap( ~  myvar, ncol = ifelse(plotType == 'all', 5, 3), scales = 'free_y') +
@@ -155,7 +155,8 @@ for (plotType in c('all', 'vwl', 'cons')) {
     theme(panel.grid = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),
-          legend.position.inside = ifelse(plotType == 'all', 'none', c(.8, .2)))
+          # legend.position.inside = ifelse(plotType == 'all', 'none', c(.8, .2))
+          )
   
   ggsave(filename = paste0('pix_repl2024/summary_', threshold, '_', plotType, '.png'), width = ifelse(plotType == 'all', 30, 20), height = ifelse(plotType == 'all', 21, 20), units = 'cm', dpi = 300, scale = 1)
 }
@@ -187,7 +188,7 @@ plotme = function(groups) {
     geom_hline(yintercept = -threshold_log, linetype = 3) +
     geom_hline(yintercept = 0, linetype = 2, color = 'gray70') +
     # annotate(geom = 'text', label = 'ROPE', x = -Inf, y = 0, vjust = 'bottom', size = 3) +
-    geom_errorbar(size = .5, width = 0) +
+    geom_errorbar(linewidth = .5, width = 0) +
     geom_point(shape = 21) +
     geom_text(aes(y = pos), nudge_x = 0.05, size = 3, hjust = hjust, vjust = 'bottom') +
     facet_wrap( ~  myvar, ncol = 2, scales = 'free_y') +
