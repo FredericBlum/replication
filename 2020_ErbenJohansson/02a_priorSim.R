@@ -13,15 +13,17 @@ library(tidybayes)
 # Cluster plotting
 options(bitmapType="cairo")
 
-myvar <- 'manner_voicing'
+myvar <- 'position_voicing'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
-# 5: position, manner
+# 5: position
 # 8: extreme_roundedness
-# 10: position_voicing, manner_voicing
+# 10: position_voicing
 
+
+# Where and how to save stuff
 folder_data <- 'data'  # path to folder with original .csv files
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 folder_fig <- 'pix_repl2024'
@@ -50,7 +52,7 @@ countBy <- function(groupingVar, normBy, dataSource) {
   # But we actually want a 0 in those cases, to represent the proportion --> 0
   # And since Dirichlet needs response above 0, we need to modify slightly
   out[is.na(out)] <- 0.001
-
+  
   # Make sure rows sum up to 1  
   for(i in 1:nrow(out)) {
     row <- out[i, 3:ncol(out)]
@@ -65,7 +67,7 @@ countBy <- function(groupingVar, normBy, dataSource) {
   colnames(respDir) <- 1:ncol(respDir)
   out$respDir <- respDir
   out <- out[, c('language', 'word', 'respDir')]
-
+  
   return(out)
 }
 
@@ -100,7 +102,7 @@ if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'vo
 myPropVars <- levels(df1[, myvar])
 n_levels <- length(myPropVars)
 
-# Data processing (groupingVar='cardinal' can be used to retrieve frequencies of cardinals)
+# Data processing
 data <- countBy(groupingVar=myvar, normBy=mv, dataSource=df1) 
 langs <- read_csv('languoid.csv') %>% select(iso639P3code, latitude, longitude, id)
 lang_info <- df1 %>% select(language, iso, region) %>% unique()
@@ -139,10 +141,11 @@ mod <- brm(
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
-  file=paste0(folder_model, '/repl2024_', myvar, '.rds'),
+  file=paste0(folder_model, '/repl2024_prior_', myvar, '.rds'),
   threads=threading(18),
+  sample_prior="only",
   iter=5000, warmup=2500, chains=4, cores=4
-  )
+)
 
 #############################
 ### Posterior predictions ###
@@ -163,7 +166,7 @@ preds_or <- predictions %>% group_by(.category) %>%
     OR_cat=odds(mean(.epred)),
     OR_word=log(odds(.epred)/OR_cat),
     category=myPropVars[.category]
-    ) %>% 
+  ) %>% 
   ungroup() %>% group_by(word, category) %>% 
   # Summaise per word in each category
   summarise(mean=mean(OR_word), sd=sd(OR_word)) %>% 
@@ -181,6 +184,7 @@ epred_plot <- preds_or %>%
   geom_text(size=3, nudge_x=3) +
   geom_point(aes(x=word, y=mean), shape=4) +
   scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+  # scale_y_continuous(limits=c(0, 1)) +
   xlab('Concept') +
   ylab('Proportion, %') +
   coord_flip() +
@@ -191,5 +195,5 @@ epred_plot <- preds_or %>%
         axis.ticks.y=element_blank(),
         legend.position='none')
 
-ggsave(filename=paste0(folder_fig, '/fit_', myvar, '.png'), epred_plot)
+ggsave(filename=paste0(folder_fig, '/prior_', myvar, '.png'), epred_plot)
 write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))

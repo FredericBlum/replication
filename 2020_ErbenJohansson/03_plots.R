@@ -1,13 +1,12 @@
 # Compiles a pooled table of fitted values from all models and plots them
-
+library(readr)
 library(ggplot2)
 
 ## Load data
 soundClasses = c('vowelConsonant', 'backness', 'height', 'roundedness', 'extreme', 'extreme_roundedness', 'voicing', 'manner', 'manner_voicing', 'position', 'position_voicing')
-soundClasses1 = c('vowelConsonant', 'backness', 'height', 'roundedness', 'extreme', 'extreme-roundedness', 'voicing', 'manner', 'manner-voicing', 'position', 'position-voicing')
 
 if (file.exists('data_derived/models_complete.csv')) {
-  df = read.csv('data_derived/models_complete.csv')
+  df = read_csv('data_derived/models_complete.csv')
 } else {
   myfiles = paste0(soundClasses, '.csv')
   df = NULL
