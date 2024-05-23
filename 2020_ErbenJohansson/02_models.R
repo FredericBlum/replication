@@ -13,7 +13,7 @@ library(tidybayes)
 # Cluster plotting
 options(bitmapType="cairo")
 
-myvar <- 'manner_voicing'
+myvar <- 'manner'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
