@@ -5,7 +5,7 @@
 #SBATCH -e ./err.%j
 #SBATCH -D ./
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=50
+#SBATCH --cpus-per-task=72
 #SBATCH --mem=50000MB
 #SBATCH --time=24:00:00
 
