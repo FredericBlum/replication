@@ -1,6 +1,3 @@
-# Modeling: prepares a model-specific dataset, builds a dirichlet model, 
-# saves fitted and observed values converted to log-odds,
-# saves the associated cardinal sounds, and saves model-specific plots
 library(brms)
 library(ggplot2)
 library(cmdstanr)
@@ -11,9 +8,9 @@ library(tibble)
 library(tidybayes)
 
 # Cluster plotting
-options(bitmapType="cairo")
+options(bitmapType='cairo')
 
-myvar <- 'manner'
+myvar <- 'manner_voicing'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
@@ -72,19 +69,19 @@ countBy <- function(groupingVar, normBy, dataSource) {
 #############################
 ### Load data             ###
 #############################
-df <- read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors = TRUE)
-ipa <- read.csv(paste0(folder_data, '/phonetic_groups.csv'), stringsAsFactors = TRUE)
+df <- read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors=TRUE)
+ipa <- read.csv(paste0(folder_data, '/phonetic_groups.csv'), stringsAsFactors=TRUE)
 
 df <- df %>% left_join(ipa) %>%
   mutate(vowelConsonant=ifelse(height != '', 'vowel', 'consonant'))
 
 # Words that are uncommonly long/short
-avg_length <- df %>% group_by(word) %>% summarize(mean=mean(nPhonemesPerWord))
+avg_length <- df %>% group_by(word) %>% summarise(mean=mean(nPhonemesPerWord))
 avg_length %>% arrange(mean)
 avg_length %>% arrange(-mean)
 
 # Coverage
-unique(df[c("word", "language")]) %>% group_by(word) %>% count() %>% arrange(n)
+unique(df[c('word', 'language')]) %>% group_by(word) %>% count() %>% arrange(n)
 
 # Subset data: for vowel features, focus only on vowels; etc.
 if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'voicing')) {
@@ -111,11 +108,11 @@ model_data <- data %>% left_join(lang_info) %>% left_join(langs, by=join_by(iso=
 #############################
 priors_in <- list(
   intercepts = lapply(2:n_levels, function(i) {
-    prior(normal(0, 0.5), class=Intercept, dpar="Intercept")}),
+    prior(normal(0, 0.5), class=Intercept, dpar='Intercept')}),
   sd = lapply(2:n_levels, function(i) {
-    prior(gamma(3, 30), class=sd, dpar="sd")}),
+    prior(gamma(3, 30), class=sd, dpar='sd')}),
   sdgp = lapply(2:n_levels, function(i) {
-    prior(gamma(3, 30), class=sdgp, dpar="sdgp")})
+    prior(gamma(3, 30), class=sdgp, dpar='sdgp')})
 )
 
 priors <- c(prior(gamma(1, 1), class=phi))
@@ -132,9 +129,9 @@ for (l in 1:length(priors_in)) {
 ### Model                 ###
 #############################
 mod <- brm(
-  data = model_data,
-  family = 'dirichlet',
-  formula = respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE),
+  data=model_data,
+  family='dirichlet',
+  formula=respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE),
   prior=priors,
   silent=0,
   backend='cmdstanr',
@@ -152,7 +149,7 @@ fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
-  print("Sorry, the file does not yet exist. This may take some time.")
+  print('Sorry, the file does not yet exist. This may take some time.')
   predictions <- add_epred_draws(newdata=new_data, mod, re_formula='~(1|word)')
   saveRDS(predictions, file=fit_name)  
 }
@@ -161,11 +158,12 @@ if (file.exists(fit_name)) {
 preds_or <- predictions %>% group_by(.category) %>%
   mutate(
     OR_cat=odds(mean(.epred)),
-    OR_word=log(odds(.epred)/OR_cat),
-    category=myPropVars[.category]
+    OR_word=log(odds(.epred)/OR_cat)
     ) %>% 
-  ungroup() %>% group_by(word, category) %>% 
-  # Summaise per word in each category
+  ungroup() %>% 
+  mutate(category=myPropVars[.category]) %>% 
+  group_by(word, category) %>% 
+  # Summarise per word in each category
   summarise(mean=mean(OR_word), sd=sd(OR_word)) %>% 
   mutate(lwr=mean-2*sd, upr=mean+2*sd) %>%
   # Add Label for words above/below threshold

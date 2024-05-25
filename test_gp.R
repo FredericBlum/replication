@@ -1,3 +1,4 @@
+### NOT USED IN CURRENT DRAFT ###
 library(tidyr)
 
 post_model <- posterior_samples(mod)
