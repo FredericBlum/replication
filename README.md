@@ -10,6 +10,10 @@ This repository is the current status of a replication study of Johansson et al.
 - `03_models.R` - Running the model for all 10 phonetic categories.
 - `04_plots.R` - Loading the individual results and comparing them to the original results.
 
+The models and posterior predictive simulations can be accessed on OSF: https://osf.io/m76eb/
+
+Please extract the two folders (`data_derived/` and `models/`) and put them into the main folder in order to have the directory-setup working.
+
 ## New Thresholds
 
 ### Evaluation thresholds
