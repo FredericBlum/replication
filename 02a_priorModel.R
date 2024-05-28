@@ -31,7 +31,7 @@ folder_model <- 'models'  # path to folder for saving .rds files
 
 # 25% increase/decrease of odds expressed as log-odds ratio
 upr_thresh <- log(1.25)
-lwr_thresh <- log(0.75)
+lwr_thresh <- log(1/1.25)
 
 #############################
 ### Functions             ###

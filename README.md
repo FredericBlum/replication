@@ -18,10 +18,10 @@ Please extract the two folders (`data_derived/` and `models/`) and put them into
 
 ### Evaluation thresholds
 
-The original authors use the logaritm with base 2 for computing the log odds ratio, and use `log2(1.2)` as a threshold that gets added and substracted to 1, in order to prepare the evaluation thresholds. I think this is wrong in various ways and use the natural logarithm instead. Also, I do not add/substract the same number (`log2(1.2)`) to the log-output, but add/substract __before__ computing the logarithm. I think this is a more accurate representation of what is going on.
+The original authors use the logaritm with base 2 for computing the log odds ratio, and use `log2(1.2)` as a threshold that gets added and substracted to 1, in order to prepare the evaluation thresholds. I think this is wrong in various ways and use the natural logarithm instead. Also, in the paper they stated to use a threshold of 1.25, while in the published script they used a threshold of 1.2. It is thus unclear which one was indeed used, but I suspect that it was 1.2.
 
-- Lower threshold: `log(1-0.25)`
-- Upper threshold: `log(1+0.25)`
+- Lower threshold: `log(1/1.25)`
+- Upper threshold: `log(1*1.25)`
 
 ### Computing Proportions
 
