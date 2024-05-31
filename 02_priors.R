@@ -2,10 +2,11 @@ library(dplyr)
 library(ggplot2)
 library(ggdist)
 library(viridis)
+library(patchwork)
 
 n <- 1e5
 
-rnorm(n, mean=0, sd=0.5) %>% 
+intercepts <- rnorm(n, mean=0, sd=0.5) %>% 
   tibble() %>% 
   mutate(group = 'Intercept%~% normal(0, 0.5)') %>% 
   ggplot(aes(x=.)) + 
@@ -15,7 +16,7 @@ rnorm(n, mean=0, sd=0.5) %>%
   theme(legend.position = "none", plot.title = element_text(size = 14)) +  
   labs(title = "Intercept ~ normal(0, 0.5)")
 
-rgamma(n, shape=1, rate=1) %>% 
+phi <- rgamma(n, shape=1, rate=1) %>% 
   tibble() %>% 
   mutate(group = 'phi%~% gamma(1, 1)') %>% 
   ggplot(aes(x=.)) + 
@@ -30,7 +31,7 @@ rgamma(n, shape=1, rate=1) %>%
         plot.title = element_text(size = 14)) +  
   labs(title = "phi ~ gamma(1, 1)")
 
-rgamma(n, shape=3, rate=30) %>% 
+sd <- rgamma(n, shape=3, rate=30) %>% 
   tibble() %>% 
   mutate(group = 'sd%~% gamma(3, 30)') %>% 
   ggplot(aes(x=.)) + 
@@ -40,3 +41,7 @@ rgamma(n, shape=3, rate=30) %>%
   theme(legend.position = "none",
         plot.title = element_text(size = 14)) +  
   labs(title = "sd ~ gamma(3, 30)")
+
+
+all_priors <- (intercepts + phi + sd)
+ggsave("figures/prior_all.png", all_priors, scale=1, width=2500, height=1000, units='px')

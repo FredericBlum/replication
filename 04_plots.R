@@ -22,7 +22,7 @@ df <- map_df(myfiles, ~ {
   }})
 
 upr_thresh <- log(1.25)
-lwr_thresh <- log(0.75)
+lwr_thresh <- log(1/1.25)
 
 # Pre-Process dataframes
 orig <- read_csv('original_results.csv') %>% 
@@ -64,6 +64,8 @@ combined <- orig %>%
     !(myvar %in% c('voicing', 'roundedness') & mean < 0)
     ) 
 
+write_csv(combined, file='data/final_results.csv')
+
 # Plot for each sound class
 for (sc in soundClasses) {
   combined %>%
@@ -96,4 +98,31 @@ for (sc in soundClasses) {
          width=20,  height=15, units='cm', dpi=500)
 }
 
-write_csv(combined, file='data/final_results.csv')
+# Plot for each sound class
+combined %>%
+  filter(result=='New Results') %>% 
+  ggplot(aes(
+    y=paste0(word, category), x=mean, xmin=lwr, xmax=upr,
+    color=outcome, size=outcome)
+  ) +
+  geom_errorbar(linewidth=1.5, width=0) +
+  geom_point(aes(fill=outcome), shape=21) +
+  geom_vline(xintercept=0, color='red') +
+  geom_label_repel(aes(label=word_dim), max.overlaps=99, size=2, box.padding=0.2) +
+  facet_wrap( ~ myvar, ncol=5) +
+  ylab('') + xlab('') +
+  scale_x_continuous(breaks=seq(-1.5, 1.24, by=0.5), labels=seq(-1.5, 1, by=0.5)) +
+  scale_y_discrete(expand = c(.03, .03)) +
+  scale_size_manual(name = '', values=c(5, 3)) +
+  scale_color_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
+  scale_fill_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
+  theme_bw() +
+  theme(
+    panel.grid=element_blank(),
+    axis.text.y=element_blank(),
+    axis.ticks.y=element_blank(),
+    legend.position='none'
+  )
+
+ggsave(filename=paste0('figures/summary_plot.png'),
+       width=30,  height=22, units='cm', dpi=500)

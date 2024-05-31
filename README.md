@@ -1,6 +1,6 @@
 # Replicating sound symbolism
 
-This repository is the current status of a replication study of Johansson et al. (2020, [link](https://duckduckgo.com/?q=markdown+link&t=newext)). So far, only the original study is reproduced with new cut-off criteria and a Gaussian Process term that controls for spatial biases. The replication on Lexibank data will be submittd as a Pre-Registered report.
+This repository is the current status of a replication study of Johansson et al. (2020, [link](https://doi.org/10.1515/lingty-2020-2034)). So far, only the original study is reproduced with new cut-off criteria and a Gaussian Process term that controls for spatial biases. The replication on Lexibank data will be submittd as a Pre-Registered report.
 
 ## Requirements
 
