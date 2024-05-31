@@ -13,7 +13,7 @@ library(tidybayes)
 # Cluster plotting
 options(bitmapType="cairo")
 
-myvar <- 'position_voicing'
+myvar <- 'voicing'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
@@ -26,8 +26,6 @@ myvar <- 'position_voicing'
 # Where and how to save stuff
 folder_data <- 'data'  # path to folder with original .csv files
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
-folder_fig <- 'pix_repl2024'
-folder_model <- 'models'  # path to folder for saving .rds files
 
 # 25% increase/decrease of odds expressed as log-odds ratio
 upr_thresh <- log(1.25)
@@ -141,7 +139,7 @@ mod <- brm(
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
-  file=paste0(folder_model, '/repl2024_prior_', myvar, '.rds'),
+  file=paste0('models/repl2024_prior_', myvar, '.rds'),
   threads=threading(18),
   sample_prior="only",
   iter=5000, warmup=2500, chains=4, cores=4
@@ -188,12 +186,12 @@ epred_plot <- preds_or %>%
   xlab('Concept') +
   ylab('Proportion, %') +
   coord_flip() +
-  facet_wrap(~category, ncol=n_levels) +
+  facet_wrap(~category, ncol=2) +
   theme_bw() +
   theme(panel.grid=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank(),
         legend.position='none')
 
-ggsave(filename=paste0(folder_fig, '/prior_', myvar, '.png'), epred_plot)
+ggsave(filename=paste0('figures/prior_', myvar, '.png'), epred_plot)
 write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))

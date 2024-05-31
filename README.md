@@ -1,6 +1,10 @@
 # Replicating sound symbolism
 
-This repository is the current status of a replication study of Johansson et al. (2020). So far, only the original study is reproduced with new cut-off criteria and a Gaussian Process term that controls for spatial biases. The replication on Lexibank data will be submittd as a Pre-Registered report.
+This repository is the current status of a replication study of Johansson et al. (2020, [link](https://duckduckgo.com/?q=markdown+link&t=newext)). So far, only the original study is reproduced with new cut-off criteria and a Gaussian Process term that controls for spatial biases. The replication on Lexibank data will be submittd as a Pre-Registered report.
+
+## Requirements
+
+In order to use `cmdstanr` as backend for brms/Stan, you need to have a running installation of `cmdstan` on your computer. You can follow the install recommendations [here](https://github.com/stan-dev/cmdstanr?tab=readme-ov-file#installation).
 
 ## File overview
 
@@ -10,7 +14,7 @@ This repository is the current status of a replication study of Johansson et al.
 - `03_models.R` - Running the model for all 10 phonetic categories.
 - `04_plots.R` - Loading the individual results and comparing them to the original results.
 
-The models and posterior predictive simulations can be accessed on OSF: https://osf.io/m76eb/
+The models and posterior predictive simulations can be accessed on OSF: <https://osf.io/m76eb/>
 
 Please extract the two folders (`data_derived/` and `models/`) and put them into the main folder in order to have the directory-setup working.
 
@@ -18,7 +22,7 @@ Please extract the two folders (`data_derived/` and `models/`) and put them into
 
 ### Evaluation thresholds
 
-The original authors use the logaritm with base 2 for computing the log odds ratio, and use `log2(1.2)` as a threshold that gets added and substracted to 1, in order to prepare the evaluation thresholds. I think this is wrong in various ways and use the natural logarithm instead. Also, in the paper they stated to use a threshold of 1.25, while in the published script they used a threshold of 1.2. It is thus unclear which one was indeed used, but I suspect that it was 1.2.
+The original authors use the logaritm with base 2 for computing the log odds ratio, and use `log2(1.2)` as a threshold that gets added and substracted to 1, in order to prepare the evaluation thresholds. To follow more standard practices in statistics and machine learning, we use the natural logarithm instead. The authors claimed in the paper to use the factor of 1.25 as factor for the threshold, while in the published script they used a factor of 1.2. It is thus unclear which one was indeed used, but I suspect that it was 1.2, since this is what is published in the script.
 
 - Lower threshold: `log(1/1.25)`
 - Upper threshold: `log(1*1.25)`

@@ -21,8 +21,6 @@ myvar <- 'manner_voicing'
 
 folder_data <- 'data'  # path to folder with original .csv files
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
-folder_fig <- 'pix_repl2024'
-folder_model <- 'models'  # path to folder for saving .rds files
 
 # 25% increase/decrease of odds expressed as log-odds ratio
 upr_thresh <- log(1.25)
@@ -136,7 +134,7 @@ mod <- brm(
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.90, max_treedepth=10),
-  file=paste0(folder_model, '/repl2024_', myvar, '.rds'),
+  file=paste0('models/repl2024_', myvar, '.rds'),
   threads=threading(18),
   iter=5000, warmup=2500, chains=4, cores=4
   )
@@ -189,5 +187,5 @@ epred_plot <- preds_or %>%
         axis.ticks.y=element_blank(),
         legend.position='none')
 
-ggsave(filename=paste0(folder_fig, '/fit_', myvar, '.png'), epred_plot)
+ggsave(filename=paste0('figures/fit_', myvar, '.png'), epred_plot)
 write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))
