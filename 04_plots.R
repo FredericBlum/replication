@@ -77,13 +77,13 @@ for (sc in soundClasses) {
     geom_errorbar(linewidth=1.5, width=0) +
     geom_point(aes(fill=outcome), shape=21) +
     geom_vline(xintercept=0, color='red') +
-    geom_label_repel(aes(label=label), max.overlaps=99, size=2.5, box.padding=0.6) +
+    geom_label_repel(aes(label=label), max.overlaps=99, size=5, box.padding=0.6) +
     facet_wrap( ~ result, ncol=2) +
     # xlab('Odds ratio (0=chance, >0=overrepresented, <0=underrepresented)')
     ylab('') + xlab('') +
     scale_x_continuous(breaks=seq(-1.5, 1.24, by=0.5), labels=seq(-1.5, 1, by=0.5)) +
     scale_y_discrete(expand = c(.03, .03)) +
-    scale_size_manual(name = '', values=c(5, 3)) +
+    scale_size_manual(name = '', values=c(6, 4)) +
     scale_color_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
     scale_fill_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
     theme_bw() +
@@ -91,11 +91,12 @@ for (sc in soundClasses) {
       panel.grid=element_blank(),
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
+      strip.text.x = element_text(size=24),
       legend.position='none'
       )
   
   ggsave(filename=paste0('figures/summary_', sc, '.png'),
-         width=20,  height=15, units='cm', dpi=500)
+         width=20,  height=30, units='cm', dpi=500)
 }
 
 # Plot for each sound class
@@ -108,7 +109,7 @@ combined %>%
   geom_errorbar(linewidth=1, width=0) +
   geom_point(aes(fill=outcome), shape=21) +
   geom_vline(xintercept=0, color='red') +
-  geom_label_repel(aes(label=word_dim), max.overlaps=99, size=5, box.padding=0.2) +
+  geom_label_repel(aes(label=word_dim), max.overlaps=99, size=7, box.padding=0.5) +
   facet_wrap( ~ myvar, ncol=2) +
   ylab('') + xlab('') +
   scale_x_continuous(breaks=seq(-1.5, 1.24, by=0.5), labels=seq(-1.5, 1, by=0.5)) +
