@@ -30,7 +30,7 @@ holman = read_cl(ASJP_40)
 
 lists = defaultdict()
 
-lists['Swadesh-100'] = swadesh
+lists['Swadesh-200'] = swadesh
 lists['Tadmor-100'] = tadmor
 lists['Holman-40'] = holman
 
@@ -56,6 +56,7 @@ for bsc_vcb in lists:
                 print(bsc_vcb, entry[0], entry[1], entry[2], entry[3])
                 strong.append(entry[0])
 
+    print(bsc_vcb, strong)
     sym_strong = len(strong)
     sym_all = len(all)
 
