@@ -3,3 +3,7 @@
 .Rproj.user
 *rds
 lexibank-analysed/
+*.sqlite
+clts/
+johanssonsoundsymbolic/
+data.csv
