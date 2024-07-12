@@ -6,11 +6,12 @@ library(dplyr)
 library(tidyr)
 library(tibble)
 library(tidybayes)
+library(forcats)
 
 # Cluster plotting
 options(bitmapType='cairo')
 
-myvar <- 'extreme_roundedness'
+myvar <- 'roundedness'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
@@ -34,10 +35,11 @@ odds <- function(x) {return(x / (1 - x))}
 countBy <- function(groupingVar, normBy, dataSource) {
   # Transform counts to proportions
   out <- dataSource %>%
-    group_by(language, word, across(groupingVar), across(normBy)) %>%
+    drop_na(groupingVar) %>% 
+    group_by(wd_id, language, word, concept, family, latitude, longitude, across(groupingVar), across(normBy)) %>%
     count() %>% ungroup() %>%
     mutate(prop=n/c_across(normBy), vars=c_across(groupingVar)) %>% 
-    select(language, word, vars, prop) %>%
+    select(language, wd_id, word, concept, family, latitude, longitude, vars, prop) %>%
     pivot_wider(names_from=vars, values_from=prop)
   
   # Note: Since we are calculating proportions, this is reasonable!
@@ -48,18 +50,17 @@ countBy <- function(groupingVar, normBy, dataSource) {
 
   # Make sure rows sum up to 1  
   for(i in 1:nrow(out)) {
-    row <- out[i, 3:ncol(out)]
-    # out[i, 3:ncol(out)] <- row
+    row <- out[i, 8:ncol(out)]
     m <- which.max(row[,])
     row[m] <- 1 - sum(row[-m])
-    out[i,] <- cbind(out[i, 1:2], row)
+    out[i,] <- cbind(out[i, 1:7], row)
   }
   
   # Create matrix for brms
   respDir <- as.matrix(out[, myPropVars])
   colnames(respDir) <- 1:ncol(respDir)
   out$respDir <- respDir
-  out <- out[, c('language', 'word', 'respDir')]
+  out <- out[, c('language', 'concept', 'wd_id', 'word', 'family', 'latitude', 'longitude', 'respDir')]
 
   return(out)
 }
@@ -67,11 +68,12 @@ countBy <- function(groupingVar, normBy, dataSource) {
 #############################
 ### Load data             ###
 #############################
-df <- read.csv(paste0(folder_data, '/langs_all_longFormat.csv'), stringsAsFactors=TRUE)
-ipa <- read.csv(paste0(folder_data, '/phonetic_groups.csv'), stringsAsFactors=TRUE)
-
-df <- df %>% left_join(ipa) %>%
-  mutate(vowelConsonant=ifelse(height != '', 'vowel', 'consonant'))
+df <- read_csv('new_data/data.csv', na=c('')) %>%
+  mutate_if(is.character, factor) %>%
+  mutate(
+    vowelConsonant=ifelse(!is.na(height), 'vowel', 'consonant'),
+    family=fct_na_value_to_level(family, 'Isolate')
+  )
 
 # Words that are uncommonly long/short
 avg_length <- df %>% group_by(word) %>% summarise(mean=mean(nPhonemesPerWord))
@@ -79,27 +81,29 @@ avg_length %>% arrange(mean)
 avg_length %>% arrange(-mean)
 
 # Coverage
-unique(df[c('word', 'language')]) %>% group_by(word) %>% count() %>% arrange(n)
+unique(df[c('concept', 'language')]) %>% group_by(concept) %>% count() %>% arrange(n)
 
 # Subset data: for vowel features, focus only on vowels; etc.
 if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'voicing')) {
   mySounds <- 'consonants'
-  df1 <- df %>% filter(vowelConsonant == 'consonant') %>% droplevels()
-  mv='nConsPerWord'
+  df1 <- df %>% filter(vowelConsonant == 'consonant') %>% 
+    group_by(wd_id) %>% 
+    mutate(nConsPerWord=n()) %>% 
+    ungroup()
+  mv <- 'nConsPerWord'
 } else if (myvar %in% c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness')) {
   mySounds='vowels'
-  df1 <- df %>% filter(vowelConsonant == 'vowel') %>% droplevels()
-  mv='nVowelsPerWord'
+  df1 <- df %>% filter(vowelConsonant == 'vowel') %>% 
+    group_by(wd_id) %>% 
+    mutate(nVowelsPerWord=n()) %>% 
+    ungroup() 
+    mv <- 'nVowelsPerWord'
 }
 
-myPropVars <- levels(df1[, myvar])
+myPropVars <- df1 %>% pull(myvar) %>% levels()
 n_levels <- length(myPropVars)
 
-# Data processing (groupingVar='cardinal' can be used to retrieve frequencies of cardinals)
 data <- countBy(groupingVar=myvar, normBy=mv, dataSource=df1) 
-langs <- read_csv('languoid.csv') %>% select(iso639P3code, latitude, longitude, id)
-lang_info <- df1 %>% select(language, iso, region) %>% unique()
-model_data <- data %>% left_join(lang_info) %>% left_join(langs, by=join_by(iso==iso639P3code))
 
 #############################
 ### Priors                ###
@@ -127,28 +131,31 @@ for (l in 1:length(priors_in)) {
 ### Model                 ###
 #############################
 mod <- brm(
-  data=model_data,
+  data=data,
   family='dirichlet',
-  formula=respDir ~ 1 + (1|word) + (1|language) + gp(longitude, latitude, gr=TRUE),
+  formula=
+    respDir ~
+    1 + (1|concept) + (1|language) + (1|family) +
+    gp(longitude, latitude, gr=TRUE),
   prior=priors,
   silent=0,
   backend='cmdstanr',
-  control=list(adapt_delta=0.90, max_treedepth=10),
+  control=list(adapt_delta=0.85, max_treedepth=10),
   file=paste0('models/repl2024_', myvar, '.rds'),
   threads=threading(18),
-  iter=5000, warmup=2500, chains=4, cores=4
+  iter=5000, warmup=2000, chains=4, cores=4
   )
 
 #############################
 ### Posterior predictions ###
 #############################
-new_data <- tibble(word=unique(model_data$word), latitude=0, longitude=150)
+new_data <- tibble(word=unique(data$concept), latitude=0, longitude=150)
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
   print('Sorry, the file does not yet exist. This may take some time.')
-  predictions <- add_epred_draws(newdata=new_data, mod, re_formula='~(1|word)')
+  predictions <- add_epred_draws(newdata=new_data, mod, re_formula='~(1|concept)')
   saveRDS(predictions, file=fit_name)  
 }
 

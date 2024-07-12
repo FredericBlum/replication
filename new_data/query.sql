@@ -17,6 +17,8 @@ WITH lb_segments
         l.cldf_glottocode AS glottocode,
         l.cldf_macroarea AS macroarea,
         l.family AS family,
+        l.cldf_latitude AS latitude,
+        l.cldf_longitude AS longitude,
         p.Concepticon_Gloss AS concept
     FROM
         lb.formtable AS f,
@@ -35,6 +37,8 @@ WITH lb_segments
         glottocode,
         macroarea,
         family,
+        latitude,
+        longitude,
         concept
     FROM
         lb_segments
@@ -48,9 +52,112 @@ SELECT
     lb.glottocode AS language,
     lb.macroarea,
     lb.family,
+    lb.latitude,
+    lb.longitude,
     lb.concept,
-    clts.name,
-    n_der.n_phones AS nPhonemesPerWord
+    clts.name AS name,
+    n_der.n_phones AS nPhonemesPerWord,
+    CASE
+        WHEN name LIKE '%unrounded%' THEN 'unrounded'
+        WHEN name LIKE '%rounded%' THEN 'rounded'
+        WHEN name LIKE '%vowel%' THEN 'PROBLEM'
+        ELSE ''
+        END roundedness,
+    CASE
+        WHEN name LIKE '%back%' THEN 'back'
+        WHEN name LIKE '%central%' THEN 'central'
+        WHEN name LIKE '%front%' THEN 'front'
+        WHEN name LIKE '%vowel%' THEN 'PROBLEM'
+        ELSE ''
+        END backness,
+    CASE
+        WHEN name LIKE '%mid%' THEN 'mid'
+        WHEN name LIKE '%close%' THEN 'high'
+        WHEN name LIKE '%open%' THEN 'low'
+        WHEN name LIKE '%vowel%' THEN 'PROBLEM'
+        ELSE ''
+        END height,
+    CASE
+        WHEN
+            name LIKE '%close%back%'
+                OR
+            name LIKE '%close%central%'
+                OR
+            -- schwa
+            name LIKE '%mid central%'
+            THEN 'high-back'
+       WHEN
+            name LIKE '%open%back%'
+                OR
+            name LIKE '%open central%'
+            THEN 'low-back'
+       WHEN name LIKE '%open%front%' THEN 'low-front'
+       WHEN
+            name LIKE '%close%front%'
+                OR
+            name LIKE '%mid front%'
+            THEN 'high-front'
+        WHEN name LIKE '%vowel%' THEN 'PROBLEM'
+        ELSE ''
+        END extreme,
+    -- height || '-' || roundedness AS extreme_roundedness
+    CASE 
+        WHEN name LIKE '%voiceless%' THEN 'unvoiced'
+        WHEN name LIKE '%voiced%' THEN 'voiced'
+        WHEN name LIKE '%consonant' THEN 'PROBLEM'
+        ELSE ''
+        END voicing,
+    CASE
+        WHEN name LIKE '%nasal consonant' THEN 'nasal'
+        WHEN
+            name LIKE '%stop consonant'
+                OR
+            name LIKE '%ejective%'
+                OR
+            name LIKE '%click consonant'
+                OR
+            name LIKE '%affricate consonant'
+                OR
+            name LIKE '%implosive%'
+            THEN 'stop'
+        WHEN name LIKE '%lateral approximant consonant' THEN 'lateral'
+        WHEN 
+            name LIKE '%fricative consonant'
+                OR
+            name LIKE '%approximant consonant'
+            THEN 'continuant'
+        WHEN
+            name LIKE '%tap consonant'
+                OR
+            name LIKE '%trill consonant'
+            THEN 'vibrant'
+        WHEN name LIKE '%consonant' THEN 'PROBLEM'
+        ELSE ''
+        END manner,
+    CASE
+        WHEN
+            name LIKE '%alveolar%'
+                OR
+            name LIKE '%dental%'
+            THEN 'alveolar'
+        WHEN
+            name LIKE '%glottal%'
+                OR
+            name LIKE '%pharyngeal %'
+            THEN 'glottal'
+        WHEN name LIKE '%labi%' THEN 'labial'  
+        WHEN
+            name LIKE '%palatal%'
+                OR
+            name LIKE '%retroflex%'
+            THEN 'palatal'
+        WHEN
+            name LIKE '%velar %'
+                OR
+            name LIKE '%uvular%'
+            THEN 'velar'
+        WHEN name LIKE '%consonant' THEN 'PROBLEM'
+        END position
 FROM
     lb_segments AS lb
 LEFT JOIN
