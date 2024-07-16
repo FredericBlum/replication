@@ -40,7 +40,7 @@ countBy <- function(groupingVar, normBy, dataSource) {
   out <- dataSource %>%
     drop_na(groupingVar) %>% 
     # changing across() to all_of, lets see if this breaks things
-    group_by(wd_id, language, word, concept, family, macroarea, latitude, longitude, across(groupingVar), across(normBy)) %>%
+    group_by(wd_id, language, word, concept, family, macroarea, latitude, longitude, across(groupingVar), across(all_of(normBy))) %>%
     count() %>% ungroup() %>%
     mutate(prop=n/c_across(normBy), vars=c_across(groupingVar)) %>% 
     select(language, wd_id, word, concept, family, macroarea, latitude, longitude, vars, prop) %>%
