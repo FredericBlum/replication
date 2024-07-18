@@ -139,6 +139,15 @@ for (l in 1:length(priors_in)) {
   }
 }
 
+# get_prior(
+#   data=data,
+# family='dirichlet',
+# formula=
+#   respDir ~
+#   1 + (1|concept) + (1|language) + (1|family) +
+#   gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F)
+# )
+
 #############################
 ### Model                 ###
 #############################
@@ -152,13 +161,13 @@ mod <- chkpt_brms(
         gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F)
         ),
   prior=priors,
-  path='chkpt_folder/'
+  path='chkpt_folder/',
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.85, max_treedepth=10),
   file=paste0('models/repl2024_', myvar, '.rds'),
   iter_sampling=5000,
-  inter_warmup=2500,
+  iter_warmup=2500,
   iter_per_chkpt=200,
   parallel_chains=4,
   brmsfit=TRUE,
