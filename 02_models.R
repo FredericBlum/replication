@@ -71,7 +71,7 @@ countBy <- function(groupingVar, normBy, dataSource) {
 #############################
 ### Load data             ###
 #############################
-df <- read_csv('new_data/data.csv', na=c('')) %>%
+df <- read_csv('data/data.csv', na=c('')) %>%
   mutate_if(is.character, factor) %>%
   mutate(
     vowelConsonant=ifelse(!is.na(height), 'vowel', 'consonant'),
@@ -83,7 +83,7 @@ df <- read_csv('new_data/data.csv', na=c('')) %>%
   filter(!is.na(macroarea))
 
 # Words that are uncommonly long/short
-avg_length <- df %>% group_by(word) %>% summarise(mean=mean(nPhonemesPerWord))
+avg_length <- df %>% group_by(concept) %>% summarise(mean=mean(nPhonemesPerWord))
 avg_length %>% arrange(mean)
 avg_length %>% arrange(-mean)
 
@@ -164,14 +164,14 @@ mod <- chkpt_brms(
   silent=0,
   backend='cmdstanr',
   control=list(adapt_delta=0.85, max_treedepth=10),
-  file=paste0('models/repl2024_', myvar, '.rds'),
-  iter_sampling=5000,
-  iter_warmup=2500,
+  # file=paste0('models/repl2024_', myvar, '.rds'),
+  iter_sampling=1000,
+  iter_warmup=500,
   iter_per_chkpt=200,
   parallel_chains=4,
   brmsfit=TRUE,
   cores=cores,
-  threads_per=cores/chains
+  threads_per=10
   )
 
 #mod <- brm(
@@ -186,7 +186,7 @@ mod <- chkpt_brms(
 #  backend='cmdstanr',
 #  control=list(adapt_delta=0.85, max_treedepth=10),
 #  file=paste0('models/repl2024_', myvar, '.rds'),
-#  threads=threading(18),
+#  threads=threading(8),
 #  iter=5000, warmup=2000, chains=4, cores=4
 #  )
 
