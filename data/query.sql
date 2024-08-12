@@ -1,6 +1,6 @@
--- sqlite> .headers on
--- sqlite> .output data.csv
--- sqlite> .mode csv
+.headers on
+.output data.csv
+.mode csv
 
 ATTACH DATABASE "lexibank.sqlite" AS lb;
 ATTACH DATABASE "clts.sqlite" AS clts;
@@ -207,3 +207,4 @@ WHERE
         AND
     lb.unicode != ''
 ;
+

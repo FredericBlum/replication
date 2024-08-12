@@ -23,7 +23,6 @@ myvar <- 'roundedness'
 # 8: extreme_roundedness
 # 10: position_voicing, manner_voicing
 
-folder_data <- 'data'  # path to folder with original .csv files
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 
 # 25% increase/decrease of odds expressed as log-odds ratio
