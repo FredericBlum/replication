@@ -7,7 +7,6 @@ library(tidyr)
 library(tibble)
 library(tidybayes)
 library(forcats)
-library(chkptstanr)
 
 # Cluster plotting
 options(bitmapType='cairo')
@@ -150,45 +149,21 @@ for (l in 1:length(priors_in)) {
 #############################
 ### Model                 ###
 #############################
-mod <- chkpt_brms(
-  data=data,
-  formula=bf(
-    family='dirichlet',
-    formula=
-        respDir ~
-        1 + (1|concept) + (1|language) + (1|family) +
-        gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F)
-        ),
-  prior=priors,
-  path='chkpt_folder/',
-  silent=0,
-  backend='cmdstanr',
-  control=list(adapt_delta=0.85, max_treedepth=10),
-  # file=paste0('models/repl2024_', myvar, '.rds'),
-  iter_sampling=1000,
-  iter_warmup=500,
-  iter_per_chkpt=200,
-  parallel_chains=4,
-  brmsfit=TRUE,
-  cores=cores,
-  threads_per=10
-  )
-
-#mod <- brm(
-#  data=data,
-#  family='dirichlet',
-#  formula=
-#    respDir ~
-#    1 + (1|concept) + (1|language) + (1|family) +
-#    gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F),
-#  prior=priors,
-#  silent=0,
-#  backend='cmdstanr',
-#  control=list(adapt_delta=0.85, max_treedepth=10),
-#  file=paste0('models/repl2024_', myvar, '.rds'),
-#  threads=threading(8),
-#  iter=5000, warmup=2000, chains=4, cores=4
-#  )
+mod <- brm(
+ data=data,
+ family='dirichlet',
+ formula=
+   respDir ~
+   1 + (1|concept) + (1|language) + (1|family) +
+   gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F),
+ prior=priors,
+ silent=0,
+ backend='cmdstanr',
+ control=list(adapt_delta=0.85, max_treedepth=10),
+ file=paste0('models/repl2024_lb2_', myvar, '.rds'),
+ threads=threading(2),
+ iter=500, warmup=250, chains=4, cores=4
+ )
 
 #############################
 ### Posterior predictions ###

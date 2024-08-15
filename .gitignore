@@ -7,3 +7,4 @@ lexibank-analysed/
 clts/
 johanssonsoundsymbolic/
 data.csv
+*.sqlite3

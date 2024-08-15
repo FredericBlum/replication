@@ -2,7 +2,7 @@
 .output data.csv
 .mode csv
 
-ATTACH DATABASE "lexibank.sqlite" AS lb;
+ATTACH DATABASE "lexibank2.sqlite3" AS lb;
 ATTACH DATABASE "clts.sqlite" AS clts;
 ATTACH DATABASE "johanssonsoundsymbolic.sqlite" AS jss;
 
