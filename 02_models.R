@@ -162,7 +162,7 @@ mod <- brm(
  control=list(adapt_delta=0.85, max_treedepth=10),
  file=paste0('models/repl2024_lb2_', myvar, '.rds'),
  threads=threading(2),
- iter=500, warmup=250, chains=4, cores=4
+ iter=700, warmup=500, chains=4, cores=4
  )
 
 #############################
