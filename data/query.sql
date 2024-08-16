@@ -1,12 +1,3 @@
-.headers on
-.output data.csv
-.mode csv
-
-ATTACH DATABASE "lexibank2.sqlite3" AS lb;
-ATTACH DATABASE "clts.sqlite" AS clts;
-ATTACH DATABASE "johanssonsoundsymbolic.sqlite" AS jss;
-
-
 WITH lb_segments
     AS (
     SELECT
@@ -21,9 +12,9 @@ WITH lb_segments
         l.cldf_longitude AS longitude,
         p.Concepticon_Gloss AS concept
     FROM
-        lb.formtable AS f,
-        lb.languagetable AS l,
-        lb.parametertable AS p
+        formtable AS f,
+        languagetable AS l,
+        parametertable AS p
     WHERE
         f.cldf_languagereference = l.cldf_id
             AND
@@ -101,7 +92,7 @@ SELECT
         ELSE ''
         END extreme,
     -- height || '-' || roundedness AS extreme_roundedness
-    CASE 
+    CASE
         WHEN name LIKE '%voiceless%' THEN 'unvoiced'
         WHEN name LIKE '%voiced%' THEN 'voiced'
         WHEN name LIKE '%consonant' THEN 'PROBLEM'
@@ -198,7 +189,7 @@ INNER JOIN
         GROUP BY
             wd_id
     ) AS n_der
-ON n_der.wd_id = lb.wd_id 
+ON n_der.wd_id = lb.wd_id
 WHERE
     -- Add only languages that ARE NOT in JSS
     jss_l.glottocode IS NULL
@@ -207,4 +198,3 @@ WHERE
         AND
     lb.unicode != ''
 ;
-
