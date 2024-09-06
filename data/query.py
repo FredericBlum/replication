@@ -26,7 +26,14 @@ cursor.execute(query)
 
 # Write output
 table = cursor.fetchall()
+header = [
+    'wd_id', 'unicode', 'word', 'glottocode', 'macroarea', 'family', 'latitude', 'longitude',
+    'concept', 'name', 'nPhonemesPerWord', 'roundedness', 'backness', 'height', 'extreme',
+    'voicing', 'manner', 'position'
+    ]
+
 
 with open('data.csv', 'w', encoding='utf8', newline='') as f:
     writer = csv.writer(f, delimiter=',')
+    writer.writerow(header)
     writer.writerows(table)
