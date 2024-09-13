@@ -129,7 +129,6 @@ priors_in <- list(
     prior(gamma(3, 30), class=sd, dpar='sd')}),
   sdgp = lapply(2:n_levels, function(i) {
     prior(gamma(3, 30), class=sdgp, dpar='sdgp')})
-  
 )
 
 priors <- c(prior(gamma(1, 1), class=phi))
@@ -148,7 +147,7 @@ family='dirichlet',
 formula=
   respDir ~
   1 + (1|concept) + (1|language) + (1|family) +
-  gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F)
+  gp(longitude, latitude, gr=TRUE, by=macroarea, scale=T)
 )
 
 #############################
@@ -160,7 +159,7 @@ mod <- brm(
  formula=
    respDir ~
    1 + (1|concept) + (1|language) + (1|family)  +
-   gp(longitude, latitude, gr=TRUE, by=macroarea, scale=F),
+   gp(longitude, latitude, gr=TRUE, by=macroarea, scale=T),
  prior=priors,
  silent=0,
  backend='cmdstanr',
