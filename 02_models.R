@@ -117,7 +117,10 @@ df1 %>% filter(family=='Isolate') %>% group_by(language) %>% count()
 myPropVars <- df1 %>% pull(myvar) %>% levels()
 n_levels <- length(myPropVars)
 
-data <- countBy(groupingVar=myvar, normBy=mv, dataSource=df1) 
+data <- countBy(groupingVar=myvar, normBy=mv, dataSource=df1)
+data_fil <- data %>%
+  filter(macroarea %in% c('South America', "Africa")) %>% 
+  droplevels()
 
 #############################
 ### Priors                ###
@@ -154,7 +157,7 @@ formula=
 ### Model                 ###
 #############################
 mod <- brm(
- data=data,
+ data=data_fil,
  family='dirichlet',
  formula=
    respDir ~
@@ -163,16 +166,16 @@ mod <- brm(
  prior=priors,
  silent=0,
  backend='cmdstanr',
- control=list(adapt_delta=0.85, max_treedepth=10),
- file=paste0('models/repl2024_lb2_ind_', myvar, '.rds'),
+ control=list(adapt_delta=0.85, max_treedepth=12),
+ file=paste0('models/repl2024_lb2_afr_', myvar, '.rds'),
  threads=threading(2),
- iter=1000, warmup=500, chains=2, cores=2
+ iter=4000, warmup=3000, chains=2, cores=2
  )
 
 #############################
 ### Posterior predictions ###
 #############################
-new_data <- tibble(concept=unique(data$concept), latitude=0, longitude=150)
+new_data <- tibble(concept=unique(data$concept), latitude=0, longitude=-160)
 fit_name=paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
