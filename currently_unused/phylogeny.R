@@ -122,16 +122,17 @@ lang_fam_gloto_data <-
   rename(Family=name_macro_family)
 
 # Run functions
-langs <- read_csv('../doreco/cldf/languages.csv')
+langs <- read_csv('../../datasets/lexibank-analysed/cldf/languages.csv')
+df_aff <- read_csv('../data/data.csv')
 
-df_aff <- read_tsv('data.tsv')
+lfd <- filter(lang_fam_gloto_data, id %in% langs$Glottocode)
+langs <- langs %>% left_join(lfd, by=join_by(ID==id, Family==Family)) %>%
+  mutate(
+    phylo=name_micro_family,
+    Language=Name
+    ) 
 
-lfd <- filter(lang_fam_gloto_data, id %in% langs$ID)
-langs <- langs %>% left_join(lfd, by=join_by(ID==id)) %>%
-  mutate(phylo=name_micro_family,
-         Language=Name) 
-
-aff_phylo <- build_phylos(lfd, name_micro_family, .micro_family=TRUE)
+aff_phylo <- build_phylos(lfd, name_micro_family, .micro_family=FALSE)
 
 write_csv(langs, 'languages.csv')
-write_rds(aff_phylo, 'df-phylo.rds')
+write_rds(aff_phylo, '../data_derived/df-phylo.rds')
