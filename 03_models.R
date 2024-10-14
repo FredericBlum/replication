@@ -1,29 +1,25 @@
+library(readr)
+library(tidyr)
 library(brms)
 library(ggplot2)
 library(cmdstanr)
-library(readr)
-library(dplyr)
-library(tidyr)
-library(tibble)
 library(tidybayes)
-library(forcats)
-
-library(geodist)
-
+library(dplyr)
 
 # Cluster plotting
-options(bitmapType='cairo')
-cores <-  parallel::detectCores()
-chains <- 4
+#options(bitmapType='cairo')
 
-myvar <- 'roundedness'
 # What levels are we modeling?
+myvar <- 'roundedness'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
 # 5: position, manner
 # 8: extreme_roundedness
 # 10: position_voicing, manner_voicing
+
+n_levels <- 2
+myPropVars <- c('rounded', 'unrounded')
 
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 
@@ -36,49 +32,47 @@ lwr_thresh <- log(1/1.25)
 #############################
 odds <- function(x) {return(x / (1 - x))}
 
-
 #############################
 ### Load data             ###
 #############################
-data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c('')))
 phylo_vcv <- read_rds('data_derived/df-phylo.rds')
 
+data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
+  # Some languages have the exact same coordinates!
+  filter(!language %in% c('pana1310', 'yaga1256', 'sher1256')) %>% 
+  # Dialect-level data makes problems with glottolog matrix
+  filter(!language %in% c(
+    'chim1313', 'vedi1234', 'mike1243', 'zafi1234',
+    'anta1259', 'anta1260', 'anta1261', 'anta1262'
+  ))
 
-languages <- data %>% distinct(language, longitude, latitude) %>% 
-  mutate(language=as.character(language))
+# Adapted from Hedvig, who based this on code from Sam Passmore
+languages <- data %>%
+  distinct(language, longitude, latitude) %>% 
+  mutate(long_lat = paste0(longitude,"_", latitude)) %>% 
+  mutate(dup = duplicated(long_lat) + duplicated(long_lat, fromLast = TRUE) ) %>% 
+  mutate(longitude = ifelse(dup > 0, jitter(longitude, factor = 2), longitude)) %>% 
+  mutate(latitude = ifelse(dup > 0, jitter(latitude, factor = 2), latitude))
 
-distances <- languages %>% select(longitude, latitude) %>% 
-  coords %>% 
-  geodist(measure = "geodesic")
+# rgrambank, vcv
+library(rgrambank)
+coords <- languages %>% dplyr::select(longitude, latitude) %>%as.matrix()
+kappa = 2 # smoothness parameter as recommended by Dinnage et al. (2020)
+sigma = c(1, 1.15) # Sigma parameter. First value is not used. 
+spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars =sigma, kappa=kappa)$varcov
+dimnames(spatial_vcv) <- list(languages$language, languages$language)
 
-dimnames(distances) <- list(languages$language, languages$language)
-
-library(Matrix)
-pd_matrix <- nearPD(distances, corr = TRUE)$mat
-
-
-# Check if matrix is positive definite
-# 1
-library(matrixcalc)
-is.positive.definite(pd_matrix)
-# 2
-all(eigen(pd_matrix)$values > 0)
-
-
-#data2 <-  list(phylo_vcv = phylo_vcv)#, spatial_vcv = spatial_vcv)
-data2 <-  list(spatial_vcv = distances)
-
-n_levels <- 2
+data2 <-  list(phylo_vcv=phylo_vcv, spatial_vcv=spatial_vcv)
 
 #############################
 ### Priors                ###
 #############################
 priors_in <- list(
-  intercepts = lapply(2:n_levels, function(i) {
+  intercepts=lapply(2:n_levels, function(i) {
     prior(normal(0, 1), class=Intercept, dpar='Intercept')}),
-  sd = lapply(2:n_levels, function(i) {
+  sd=lapply(2:n_levels, function(i) {
     prior(gamma(3, 30), class=sd, dpar='sd')})#,
-  #sdgp = lapply(2:n_levels, function(i) {
+  #sdgp=lapply(2:n_levels, function(i) {
   #  prior(gamma(3, 30), class=sdgp, dpar='sdgp')})
 )
 
@@ -95,41 +89,37 @@ for (l in 1:length(priors_in)) {
 get_prior(
   data=data,
   data2=data2,
-family='dirichlet',
-formula=
-  respDir ~
-  1 + (1 | gr(language, cov = spatial_vcv)),# + #(1|concept)
-  #gp(longitude, latitude, by=macroarea, gr=TRUE, scale=T)
+  family='dirichlet',
+  formula=respDir ~ 1 + (1|concept) + 
+    (1 | gr(family, cov=phylo_vcv)) +
+    (1 | gr(language, cov=spatial_vcv)) 
 )
 
 #############################
 ### Model                 ###
 #############################
-word_var <- c('MOUTH', 'ROUND')
-word <- data %>% filter(concept %in% word_var)
+data_mod <- data %>% mutate(spatial_id = language, phylo_id = language)
 
 mod <- brm(
- data=word,
+ data=data_mod,
  data2=data2,
  family='dirichlet',
- formula=
-   respDir ~
-   1 + (1 | gr(family, cov = phylo_vcv)) + (1|concept) +
-   #gp(longitude, latitude, gr=TRUE, scale=T),
-   gp(longitude, latitude, by=macroarea, gr=TRUE, scale=T),
+ formula=respDir ~ 1 + (1|concept) + 
+   (1 | gr(phylo_id, cov=phylo_vcv)) +
+   (1 | gr(spatial_id, cov=spatial_vcv)),
  prior=priors,
  silent=0,
  backend='cmdstanr',
  control=list(adapt_delta=0.80, max_treedepth=10),
- file=paste0('models/repl2024_lb2_sets_', myvar, '.rds'),
- threads=threading(1),
+ file=paste0('models/repl2024_lb2_', myvar, '.rds'),
+ threads=threading(2),
  iter=1000, warmup=500, chains=4, cores=4
  )
 
 #############################
 ### Posterior predictions ###
 #############################
-new_data <- tibble(concept=word_var, latitude=0, longitude=-160, family='a', language='a')
+new_data <- tibble(concept=unique(data_mod$word), family='a', language='a')
 fit_name <- paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)

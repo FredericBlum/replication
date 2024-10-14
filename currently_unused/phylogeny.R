@@ -122,17 +122,20 @@ lang_fam_gloto_data <-
   rename(Family=name_macro_family)
 
 # Run functions
-langs <- read_csv('../../datasets/lexibank-analysed/cldf/languages.csv')
-df_aff <- read_csv('../data/data.csv')
+myvar <- 'roundedness'
+langs <- read_rds(paste0('../data/processed_', myvar, '.rds', na=c(''))) %>% 
+  # Some languages have the exact same coordinates!
+  filter(!language %in% c('pana1310', 'yaga1256', 'sher1256')) %>% 
+  # Dialect-level data makes problems with glottolog matrix
+  filter(!language %in% c(
+    'chim1313', 'vedi1234', 'mike1243', 'zafi1234',
+    'anta1259', 'anta1260', 'anta1261', 'anta1262'
+    )) %>% 
+  distinct(language)
 
-lfd <- filter(lang_fam_gloto_data, id %in% langs$Glottocode)
-langs <- langs %>% left_join(lfd, by=join_by(ID==id, Family==Family)) %>%
-  mutate(
-    phylo=name_micro_family,
-    Language=Name
-    ) 
+aff_phylo <- lang_fam_gloto_data %>%
+  filter(id %in% langs$language) %>% 
+  build_phylos(id, .micro_family=FALSE)
 
-aff_phylo <- build_phylos(lfd, name_micro_family, .micro_family=FALSE)
-
-write_csv(langs, 'languages.csv')
-write_rds(aff_phylo, '../data_derived/df-phylo.rds')
+ape::vcv(aff_phylo) %>% 
+  write_rds('../data_derived/df-phylo.rds')

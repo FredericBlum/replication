@@ -27,14 +27,10 @@ map_lb <- ggplot() +
     height=3, width=2, size=6, shape=21, alpha=0.7
   ) +
   scale_fill_viridis_d(option="D") +
-  # geom_label_repel(box.padding=0.5, point.padding=0.5,
-  #                  data=languages, aes(longitude, latitude, label=Name), 
-  #                  min.segment.length=unit(0, 'lines'),
-  #                  size=5, max.overlaps=99) +
   scale_x_continuous(name=NULL, breaks=NULL) +
   scale_y_continuous(name=NULL, breaks=NULL) +
   theme_bw() +
   theme(legend.position="none") 
 
 map_lb
-ggsave('images/map_lb.png', map_lb, scale=1, width=3000, height=2000, units="px")
+ggsave('figures/map_lb.png', map_lb, scale=1, width=3000, height=2000, units="px")
