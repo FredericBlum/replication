@@ -86,40 +86,39 @@ for (l in 1:length(priors_in)) {
   }
 }
 
-get_prior(
-  data=data,
-  data2=data2,
-  family='dirichlet',
-  formula=respDir ~ 1 + (1|concept) + 
-    (1 | gr(family, cov=phylo_vcv)) +
-    (1 | gr(language, cov=spatial_vcv)) 
-)
+# get_prior(
+#   data=data,
+#   data2=data2,
+#   family='dirichlet',
+#   formula=respDir ~ 1 + (1|concept) + 
+#     (1 | gr(family, cov=phylo_vcv)) +
+#     (1 | gr(language, cov=spatial_vcv)) 
+# )
 
 #############################
 ### Model                 ###
 #############################
-data_mod <- data %>% mutate(spatial_id = language, phylo_id = language)
-
-mod <- brm(
- data=data_mod,
- data2=data2,
- family='dirichlet',
- formula=respDir ~ 1 + (1|concept) + 
-   (1 | gr(phylo_id, cov=phylo_vcv)) +
-   (1 | gr(spatial_id, cov=spatial_vcv)),
- prior=priors,
- silent=0,
- backend='cmdstanr',
- control=list(adapt_delta=0.80, max_treedepth=10),
- file=paste0('models/repl2024_lb2_', myvar, '.rds'),
- threads=threading(2),
- iter=1000, warmup=500, chains=4, cores=4
- )
+mod <- data %>%
+  mutate(spatial_id = language, phylo_id = language) %>% 
+  brm(
+   data2=data2,
+   family='dirichlet',
+   formula=respDir ~ 1 + (1|concept) + 
+     (1 | gr(phylo_id, cov=phylo_vcv)) +
+     (1 | gr(spatial_id, cov=spatial_vcv)),
+   prior=priors,
+   silent=0,
+   backend='cmdstanr',
+   control=list(adapt_delta=0.80, max_treedepth=10),
+   file=paste0('models/repl2024_lb2_', myvar, '.rds'),
+   threads=threading(2),
+   iter=2000, warmup=1000, chains=4, cores=4
+   )
 
 #############################
 ### Posterior predictions ###
 #############################
-new_data <- tibble(concept=unique(data_mod$word), family='a', language='a')
+new_data <- tibble(concept=unique(data$concept), family='a', language='a')
 fit_name <- paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
