@@ -70,12 +70,9 @@ distances <- languages  %>%
 dimnames(distances) <- list(languages$language, languages$language)
 is.positive.definite(distances)
 
-
-
 # Approach from Hedvig using fields
 library(fields, attach.required=F)
 coords <- languages %>% select(longitude, latitude) %>%  as.matrix()
 dists_3D <- fields::rdist.earth(x1=coords, x2=coords, miles=F) 
 dimnames(dists_3D) <- list(languages$language, languages$language)
 is.positive.definite(dists_3D)
-
