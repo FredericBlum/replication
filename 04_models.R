@@ -111,8 +111,8 @@ mod <- data %>%
    backend='cmdstanr',
    control=list(adapt_delta=0.80, max_treedepth=10),
    file=paste0('models/repl2024_lb2_', myvar, '.rds'),
-   threads=threading(4),
-   iter=5000, warmup=2000, chains=4, cores=16
+   threads=threading(2),
+   iter=3000, warmup=1500, chains=4, cores=8
    )
 
 #############################
@@ -125,7 +125,7 @@ if (file.exists(fit_name)) {
 } else{
   print('Sorry, the file does not yet exist. This may take some time.')
   predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T)
-  saveRDS(predictions, file=fit_name)  
+  saveRDS(predictions, file=fit_name)
 }
 
 # Compute odds ratio for all fits based on odds for each category
