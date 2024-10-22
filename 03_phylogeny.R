@@ -122,8 +122,8 @@ lang_fam_gloto_data <-
   rename(Family=name_macro_family)
 
 # Run functions
-myvar <- 'roundedness'
-langs <- read_rds(paste0('../data/processed_', myvar, '.rds', na=c(''))) %>% 
+myvar <- 'voicing'
+langs <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
   # Some languages have the exact same coordinates!
   filter(!language %in% c('pana1310', 'yaga1256', 'sher1256')) %>% 
   # Dialect-level data makes problems with glottolog matrix
@@ -137,5 +137,4 @@ aff_phylo <- lang_fam_gloto_data %>%
   filter(id %in% langs$language) %>% 
   build_phylos(id, .micro_family=FALSE)
 
-ape::vcv(aff_phylo) %>% 
-  write_rds('../data_derived/df-phylo.rds')
+ape::vcv(aff_phylo) %>% write_rds('data_derived/df-phylo.rds')

@@ -10,16 +10,13 @@ library(dplyr)
 #options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'roundedness'
+myvar <- 'voicing'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
 # 5: position, manner
 # 8: extreme_roundedness
 # 10: position_voicing, manner_voicing
-
-n_levels <- 2
-myPropVars <- c('rounded', 'unrounded')
 
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 
@@ -36,6 +33,11 @@ odds <- function(x) {return(x / (1 - x))}
 ### Load data             ###
 #############################
 phylo_vcv <- read_rds('data_derived/df-phylo.rds')
+
+myPropVars <- read_csv('data/data.csv', na=c('')) %>%
+  mutate_if(is.character, factor) %>%
+  pull(myvar) %>% levels()
+n_levels <- length(myPropVars)
 
 data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
   # Some languages have the exact same coordinates!

@@ -4,7 +4,7 @@ library(tidyr)
 library(tibble)
 library(forcats)
 
-myvar <- 'roundedness'
+myvar <- 'manner_voicing'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
@@ -25,7 +25,7 @@ countBy <- function(groupingVar, normBy, dataSource) {
   out <- dataSource %>%
     drop_na(groupingVar) %>% 
     # changing across() to all_of, lets see if this breaks things
-    group_by(wd_id, language, word, concept, family, macroarea, latitude, longitude, across(groupingVar), across(all_of(normBy))) %>%
+    group_by(wd_id, language, word, concept, family, macroarea, latitude, longitude, across(all_of(groupingVar)), across(all_of(normBy))) %>%
     count() %>% ungroup() %>%
     mutate(prop=n/c_across(all_of(normBy)), vars=c_across(all_of(groupingVar))) %>% 
     select(language, wd_id, word, concept, family, macroarea, latitude, longitude, vars, prop) %>%
@@ -101,7 +101,7 @@ length(unique(df1$language))
 length(unique(df1$family))
 df1 %>% filter(family=='Isolate') %>% group_by(language) %>% count()
 
-myPropVars <- df1 %>% pull(myvar) %>% levels()
+myPropVars <- df %>% pull(myvar) %>% levels()
 n_levels <- length(myPropVars)
 
 data <- countBy(groupingVar=myvar, normBy=mv, dataSource=df1)

@@ -27,7 +27,7 @@ lwr_thresh <- log(1/1.25)
 # Pre-Process dataframes
 orig <- read_csv('original_results.csv') %>% 
   select(word, group, fit, lwr, upr, topCardinal, myvar) %>% 
-  rename(mean=fit, category=group) %>% 
+  rename(mean=fit, category=group, concept=word) %>% 
   mutate(result='Original Results', sd=NA, word_dim=NA,
          # Outcome is Strong if HPDI outside of ROPE
          # Outcome is Weak if Mean outside of ROPE and HPDI doesnt include 0
@@ -35,7 +35,7 @@ orig <- read_csv('original_results.csv') %>%
          outcome=ifelse((lwr>upr_thresh | upr < lwr_thresh), 'Strong', ifelse(
            (lwr > -lwr_thresh & upr < upr_thresh), 'No', ifelse(
              ((lwr > 0 & mean > upr_thresh) | (upr < 0 & mean < lwr_thresh)), 'Weak', 'Doubtful'))),
-         label=ifelse(outcome=='Strong', paste0(toupper(word), ' [', category, ']'), NA)
+         label=ifelse(outcome=='Strong', paste0(toupper(concept), ' [', category, ']'), NA)
   )
 
 df_plot <- df %>% 
@@ -44,7 +44,7 @@ df_plot <- df %>%
   # Add judgement of result strength
   mutate(
     result='New Results', topCardinal='',
-    label=paste0(toupper(word), ' [', category, ']'),
+    label=paste0(toupper(concept), ' [', category, ']'),
     # Outcome is Strong if HPDI outside of ROPE
     # Outcome is Weak if Mean outside of ROPE and HPDI doesnt include 0
     # Outcome is Absent if HPDI fully inside ROPE
@@ -57,7 +57,7 @@ df_plot <- df %>%
 
 combined <- orig %>%
   rbind(df_plot) %>% 
-  mutate(word=toupper(word)) %>% 
+  mutate(concept=toupper(concept)) %>% 
   filter(
     outcome %in% c('Strong', 'Weak'),
     # Remove negative values of binary outcomes
@@ -71,7 +71,7 @@ for (sc in soundClasses) {
   combined %>%
     filter(myvar == sc) %>% 
     ggplot(aes(
-      y=paste0(word, category), x=mean, xmin=lwr, xmax=upr,
+      y=paste0(concept, category), x=mean, xmin=lwr, xmax=upr,
       color=outcome, size=outcome)
       ) +
     geom_errorbar(linewidth=1.5, width=0) +
@@ -104,7 +104,7 @@ for (sc in soundClasses) {
 combined %>%
   filter(result=='New Results') %>% 
   ggplot(aes(
-    y=paste0(word, category), x=mean, xmin=lwr, xmax=upr,
+    y=paste0(concept, category), x=mean, xmin=lwr, xmax=upr,
     color=outcome, size=outcome)
   ) +
   geom_errorbar(linewidth=1, width=0) +
