@@ -55,8 +55,8 @@ df_plot <- df %>%
     )
   )
 
-combined <- orig %>%
-  rbind(df_plot) %>% 
+combined <- df_plot %>%
+  rbind(orig) %>% 
   mutate(concept=toupper(concept)) %>% 
   filter(
     outcome %in% c('Strong', 'Weak'),

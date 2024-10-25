@@ -10,7 +10,7 @@ library(dplyr)
 #options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'voicing'
+myvar <- 'height'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -114,7 +114,7 @@ mod <- data %>%
    control=list(adapt_delta=0.80, max_treedepth=10),
    file=paste0('models/repl2024_lb2_', myvar, '.rds'),
    threads=threading(2),
-   iter=3000, warmup=1500, chains=4, cores=8
+   iter=5000, warmup=2000, chains=4, cores=8
    )
 
 #############################
