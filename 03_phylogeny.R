@@ -6,10 +6,11 @@
 # We thank the authors for sharing their code, making it possible to re-use
 # this method easily for new studies, and thus actively helping other scholars.
 ###############################################################################
-### NOT USED IN CURRENT DRAFT ###
 
 library(ape)
-library(tidyverse)
+library(readr)
+library(dplyr)
+library(stringr)
 
 ## functions
 

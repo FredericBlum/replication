@@ -7,7 +7,7 @@ library(tidybayes)
 library(dplyr)
 
 # Cluster plotting
-#options(bitmapType='cairo')
+options(bitmapType='cairo')
 
 # What levels are we modeling?
 myvar <- 'backness'
