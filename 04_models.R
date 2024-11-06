@@ -10,7 +10,7 @@ library(dplyr)
 #options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'height'
+myvar <- 'backness'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -51,16 +51,16 @@ data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>%
 # Adapted from Hedvig, who based this on code from Sam Passmore
 languages <- data %>%
   distinct(language, longitude, latitude) %>% 
-  mutate(long_lat = paste0(longitude,"_", latitude)) %>% 
-  mutate(dup = duplicated(long_lat) + duplicated(long_lat, fromLast = TRUE) ) %>% 
-  mutate(longitude = ifelse(dup > 0, jitter(longitude, factor = 2), longitude)) %>% 
-  mutate(latitude = ifelse(dup > 0, jitter(latitude, factor = 2), latitude))
+  mutate(long_lat=paste0(longitude,"_", latitude)) %>% 
+  mutate(dup=duplicated(long_lat) + duplicated(long_lat, fromLast=TRUE) ) %>% 
+  mutate(longitude=ifelse(dup > 0, jitter(longitude, factor=2), longitude)) %>% 
+  mutate(latitude=ifelse(dup > 0, jitter(latitude, factor=2), latitude))
 
 # rgrambank, vcv
 library(rgrambank)
 coords <- languages %>% dplyr::select(longitude, latitude) %>%as.matrix()
-kappa = 2 # smoothness parameter as recommended by Dinnage et al. (2020)
-sigma = c(1, 1.15) # Sigma parameter. First value is not used. 
+kappa=2 # smoothness parameter as recommended by Dinnage et al. (2020)
+sigma=c(1, 1.15) # Sigma parameter. First value is not used. 
 spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars =sigma, kappa=kappa)$varcov
 dimnames(spatial_vcv) <- list(languages$language, languages$language)
 
@@ -101,7 +101,7 @@ for (l in 1:length(priors_in)) {
 ### Model                 ###
 #############################
 mod <- data %>%
-  mutate(spatial_id = language, phylo_id = language) %>% 
+  mutate(spatial_id=language, phylo_id=language) %>% 
   brm(
    data2=data2,
    family='dirichlet',
@@ -111,10 +111,10 @@ mod <- data %>%
    prior=priors,
    silent=0,
    backend='cmdstanr',
-   control=list(adapt_delta=0.80, max_treedepth=10),
+   control=list(adapt_delta=0.85, max_treedepth=10),
    file=paste0('models/repl2024_lb2_', myvar, '.rds'),
-   threads=threading(2),
-   iter=5000, warmup=2000, chains=4, cores=8
+   threads=threading(4),
+   iter=5000, warmup=2500, chains=4, cores=16
    )
 
 #############################
