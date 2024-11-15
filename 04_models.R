@@ -10,7 +10,7 @@ library(dplyr)
 options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'manner_voicing'
+myvar <- 'extreme'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
