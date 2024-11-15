@@ -10,7 +10,7 @@ library(dplyr)
 options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'height'
+myvar <- 'manner_voicing'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -37,8 +37,14 @@ odds <- function(x) {return(x / (1 - x))}
 phylo_vcv <- read_rds('data_derived/df-phylo.rds')
 
 myPropVars <- read_csv('data/data.csv', na=c('')) %>%
+  mutate(
+    extreme_roundedness=factor(ifelse(!is.na(extreme), paste(extreme, roundedness, sep='-'), '')),
+    manner_voicing=factor(ifelse(!is.na(voicing), paste(manner, voicing, sep='-'), '')),
+    position_voicing=factor(ifelse(!is.na(voicing), paste(position, voicing, sep='-'), ''))
+    ) %>% 
   mutate_if(is.character, factor) %>%
   pull(myvar) %>% levels()
+
 n_levels <- length(myPropVars)
 
 data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
