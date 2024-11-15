@@ -1,10 +1,13 @@
 *Rproj
 *.DS_Store
 .Rproj.user
-*rds
+
 lexibank-analysed/
 *.sqlite
 clts/
 johanssonsoundsymbolic/
+models/
+data_derived/repl2024*
+old/data_derived/repl2024*
 data.csv
 *.sqlite3

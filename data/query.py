@@ -27,7 +27,7 @@ cursor.execute(query)
 # Write output
 table = cursor.fetchall()
 header = [
-    'wd_id', 'unicode', 'word', 'glottocode', 'macroarea', 'family', 'latitude', 'longitude',
+    'wd_id', 'unicode', 'word', 'language', 'macroarea', 'family', 'latitude', 'longitude',
     'concept', 'name', 'nPhonemesPerWord', 'roundedness', 'backness', 'height', 'extreme',
     'voicing', 'manner', 'position'
     ]

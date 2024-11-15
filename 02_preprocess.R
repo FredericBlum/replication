@@ -4,14 +4,15 @@ library(tidyr)
 library(tibble)
 library(forcats)
 
-myvar <- 'manner_voicing'
+myvar <- 'position_voicing'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
 # 5: position, manner
+# 7: manner_voicing
 # 8: extreme_roundedness
-# 10: position_voicing, manner_voicing
+# 10: position_voicing
 
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 
@@ -62,15 +63,14 @@ df <- read_csv('data/data.csv', na=c('')) %>%
   mutate(
     vowelConsonant=ifelse(!is.na(height), 'vowel', 'consonant'),
     family=fct_na_value_to_level(family, 'Isolate'),
-    extreme_roundedness=paste(extreme, roundedness, sep='-'),
-    manner_voicing=paste(manner, voicing, sep='-'),
-    position_voicing=paste(position, voicing, sep='-')
+    extreme_roundedness=factor(ifelse(!is.na(extreme), paste(extreme, roundedness, sep='-'), '')),
+    manner_voicing=factor(ifelse(!is.na(voicing), paste(manner, voicing, sep='-'), '')),
+    position_voicing=factor(ifelse(!is.na(voicing), paste(position, voicing, sep='-'), ''))
   ) %>% 
   filter(
     !is.na(macroarea),
     !(macroarea %in% c('Eastern Nigeria', 'Southeast Asia', 'Northeast Africa'))
-  ) %>% 
-  droplevels()
+  ) 
 
 # Words that are uncommonly long/short
 avg_length <- df %>% group_by(concept) %>% summarise(mean=mean(nPhonemesPerWord))
@@ -86,14 +86,16 @@ if (myvar %in% c('manner', 'manner_voicing', 'position', 'position_voicing', 'vo
   df1 <- df %>% filter(vowelConsonant == 'consonant') %>% 
     group_by(wd_id) %>% 
     mutate(nConsPerWord=n()) %>% 
-    ungroup()
+    ungroup()%>%
+    droplevels()
   mv <- 'nConsPerWord'
 } else if (myvar %in% c('height', 'backness', 'roundedness', 'extreme', 'extreme_roundedness')) {
   mySounds='vowels'
   df1 <- df %>% filter(vowelConsonant == 'vowel') %>% 
     group_by(wd_id) %>% 
     mutate(nVowelsPerWord=n()) %>% 
-    ungroup() 
+    ungroup() %>%
+    droplevels()
   mv <- 'nVowelsPerWord'
 }
 
@@ -101,7 +103,7 @@ length(unique(df1$language))
 length(unique(df1$family))
 df1 %>% filter(family=='Isolate') %>% group_by(language) %>% count()
 
-myPropVars <- df %>% pull(myvar) %>% levels()
+myPropVars <- df1 %>% pull(myvar) %>% levels()
 n_levels <- length(myPropVars)
 
 data <- countBy(groupingVar=myvar, normBy=mv, dataSource=df1)

@@ -96,8 +96,7 @@ for (sc in soundClasses) {
       legend.position='none'
       )
   
-  ggsave(filename=paste0('figures/summary_', sc, '.png'),
-         width=30,  height=30, units='cm', dpi=500)
+  ggsave(filename=paste0('figures/summary_', sc, '.png'), width=30,  height=30, units='cm', dpi=500)
 }
 
 # Plot for each sound class

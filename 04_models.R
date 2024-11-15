@@ -10,13 +10,15 @@ library(dplyr)
 options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'backness'
+myvar <- 'height'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
 # 5: position, manner
+# 7: manner_voicing
 # 8: extreme_roundedness
-# 10: position_voicing, manner_voicing
+# 10: position_voicing
+
 
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 

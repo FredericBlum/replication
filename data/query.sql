@@ -40,7 +40,7 @@ SELECT
     lb.wd_id,
     lb.unicode,
     lb.word,
-    lb.glottocode AS language,
+    lb.glottocode,
     lb.macroarea,
     lb.family,
     lb.latitude,
@@ -62,7 +62,8 @@ SELECT
         ELSE ''
         END backness,
     CASE
-        WHEN name LIKE '%mid%' THEN 'mid'
+        WHEN name LIKE '%tone' THEN ''
+        WHEN name LIKE '%mid%' AND name LIKE '%vowel%' THEN 'mid'
         WHEN name LIKE '%close%' THEN 'high'
         WHEN name LIKE '%open%' THEN 'low'
         WHEN name LIKE '%vowel%' THEN 'PROBLEM'
@@ -76,6 +77,8 @@ SELECT
                 OR
             -- schwa
             name LIKE '%mid central%'
+                OR
+            name LIKE '%mid back%'
             THEN 'high-back'
        WHEN
             name LIKE '%open%back%'
@@ -94,7 +97,7 @@ SELECT
     -- height || '-' || roundedness AS extreme_roundedness
     CASE
         WHEN name LIKE '%voiceless%' THEN 'unvoiced'
-        WHEN name LIKE '%voiced%' THEN 'voiced'
+        WHEN name LIKE '%voiced%' AND name NOT LIKE '%vowel%' THEN 'voiced'
         WHEN name LIKE '%consonant' THEN 'PROBLEM'
         ELSE ''
         END voicing,
@@ -197,4 +200,6 @@ WHERE
     lb.unicode != '+'
         AND
     lb.unicode != ''
+        AND
+    clts.name NOT LIKE '%tone' 
 ;
