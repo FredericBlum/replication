@@ -5,12 +5,13 @@ library(ggplot2)
 library(cmdstanr)
 library(tidybayes)
 library(dplyr)
+library(fields)
 
 # Cluster plotting
-options(bitmapType='cairo')
+# options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'extreme'
+myvar <- 'manner_voicing'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -38,11 +39,11 @@ phylo_vcv <- read_rds('data_derived/df-phylo.rds')
 
 myPropVars <- read_csv('data/data.csv', na=c('')) %>%
   mutate(
-    extreme_roundedness=factor(ifelse(!is.na(extreme), paste(extreme, roundedness, sep='-'), '')),
-    manner_voicing=factor(ifelse(!is.na(voicing), paste(manner, voicing, sep='-'), '')),
-    position_voicing=factor(ifelse(!is.na(voicing), paste(position, voicing, sep='-'), ''))
+    extreme_roundedness=ifelse(!is.na(extreme), paste(extreme, roundedness, sep='-'), NA),
+    manner_voicing=ifelse(!is.na(voicing), paste(manner, voicing, sep='-'), NA),
+    position_voicing=ifelse(!is.na(voicing), paste(position, voicing, sep='-'), NA)
     ) %>% 
-  mutate_if(is.character, factor) %>%
+  mutate_if(is.character, factor) %>% 
   pull(myvar) %>% levels()
 
 n_levels <- length(myPropVars)
