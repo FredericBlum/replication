@@ -57,7 +57,10 @@ df_plot <- df %>%
 
 combined <- df_plot %>%
   rbind(orig) %>% 
-  mutate(concept=toupper(concept)) %>% 
+  mutate(
+    concept=toupper(concept),
+    result=factor(result, levels=c("Original Results","New Results"))
+    ) %>% 
   filter(
     outcome %in% c('Strong', 'Weak'),
     # Remove negative values of binary outcomes
@@ -78,6 +81,7 @@ for (sc in soundClasses) {
     geom_point(aes(fill=outcome), shape=21) +
     geom_vline(xintercept=0, color='red') +
     geom_label_repel(aes(label=label), max.overlaps=99, size=7, box.padding=0.7) +
+    annotate('rect', xmin=lwr_thresh, xmax=upr_thresh, ymin=0, ymax=Inf, alpha=.1) +
     facet_wrap( ~ result, ncol=2) +
     # xlab('Odds ratio (0=chance, >0=overrepresented, <0=underrepresented)')
     ylab('') + xlab('') +
