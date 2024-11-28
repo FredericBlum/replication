@@ -22,7 +22,7 @@ ASJP_40 = BASE + "Holman-2008-40.tsv"
 original = defaultdict()
 with UnicodeDictReader(JOHANSSON, delimiter='\t') as reader:
     for line in reader:
-        original[line["ENGLISH"]] = line['CONCEPTICON_GLOSS']
+        original[line["CONCEPTICON_GLOSS"]] = line['ENGLISH']
 
 tadmor = read_cl(TAD_100)
 swadesh = read_cl(SWAD_200)
@@ -40,7 +40,7 @@ with open('data/final_results.csv', mode='r', encoding="utf8") as file:
     headers = next(data)
 
     for line in data:
-        results.append([line[0], line[1], line[7], line[10]])
+        results.append([line[0], line[1], line[8], line[11]])
 
 table = []
 header = ['List', 'Strong (n)', 'Strong (%)', 'Weak (n)', 'Weak (%)']
@@ -53,8 +53,9 @@ for bsc_vcb in lists:
             if entry[0] not in all:
                 all.append(entry[0])
             if entry[3] == 'Strong' and entry[0] not in strong:
-                print(bsc_vcb, entry[0], entry[1], entry[2], entry[3])
                 strong.append(entry[0])
+
+            print(bsc_vcb, entry[0], entry[1], entry[2], entry[3])
 
     print(bsc_vcb, strong)
     sym_strong = len(strong)

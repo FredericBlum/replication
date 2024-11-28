@@ -71,7 +71,7 @@ write_csv(combined, file='data/final_results.csv')
 
 # Plot for each sound class
 for (sc in soundClasses) {
-  combined %>%
+  test <- combined %>%
     filter(myvar == sc) %>% 
     ggplot(aes(
       y=paste0(concept, category), x=mean, xmin=lwr, xmax=upr,
@@ -85,7 +85,7 @@ for (sc in soundClasses) {
     facet_wrap( ~ result, ncol=2) +
     # xlab('Odds ratio (0=chance, >0=overrepresented, <0=underrepresented)')
     ylab('') + xlab('') +
-    scale_x_continuous(breaks=seq(-1.5, 1.24, by=0.5), labels=seq(-1.5, 1, by=0.5)) +
+    #scale_x_continuous(breaks=seq(-1.5, 1.5, by=0.5), labels=seq(-1.5, 1.5, by=0.5)) +
     scale_y_discrete(expand = c(.03, .03)) +
     scale_size_manual(name = '', values=c(6, 4)) +
     scale_color_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
