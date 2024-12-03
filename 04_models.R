@@ -11,7 +11,7 @@ library(fields)
 # options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'extreme_roundedness'
+myvar <- 'voicing'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -19,7 +19,6 @@ myvar <- 'extreme_roundedness'
 # 7: manner_voicing
 # 8: extreme_roundedness
 # 10: position_voicing
-
 
 folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
 
@@ -129,12 +128,14 @@ mod <- data %>%
 #############################
 ### Posterior predictions ###
 #############################
+new_data <- data %>% distinct(concept)
 new_data <- tibble(concept=unique(data$concept), family='a', language='a')
 fit_name <- paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
   print('Sorry, the file does not yet exist. This may take some time.')
+  #predictions <- posterior_epred(newdata=new_data, mod, allow_new_levels=T)
   predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T)
   saveRDS(predictions, file=fit_name)
 }
