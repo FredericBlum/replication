@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --cpus-per-task 16
-#SBATCH --mem 200G
+#SBATCH --mem 250G
 #SBATCH -J repl
-#SBATCH -w dlcenode02
+#SBATCH -w dlcenode01
 #SBATCH --partition=dlcegpu
 #SBATCH --output=%j.%x.out
 #SBATCH --error=%j.%x.err
