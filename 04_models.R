@@ -158,22 +158,22 @@ preds_or <- predictions %>% group_by(.category) %>%
 #############################
 ### Plotting              ###
 #############################
-epred_plot <- preds_or %>% 
-  ggplot(aes(x=concept, y=mean, ymin=lwr, ymax=upr, label=word_dim)) +
-  geom_point() +
-  geom_errorbar(width=0) +
-  geom_text(size=3, nudge_x=3) +
-  geom_point(aes(x=concept, y=mean), shape=4) +
-  scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-  xlab('Concept') +
-  ylab('Proportion, %') +
-  coord_flip() +
-  facet_wrap(~category, ncol=n_levels) +
-  theme_bw() +
-  theme(panel.grid=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
-        legend.position='none')
-
-ggsave(filename=paste0('figures/fit_', myvar, '.png'), epred_plot)
+# epred_plot <- preds_or %>% 
+#   ggplot(aes(x=concept, y=mean, ymin=lwr, ymax=upr, label=word_dim)) +
+#   geom_point() +
+#   geom_errorbar(width=0) +
+#   geom_text(size=3, nudge_x=3) +
+#   geom_point(aes(x=concept, y=mean), shape=4) +
+#   scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
+#   xlab('Concept') +
+#   ylab('Proportion, %') +
+#   coord_flip() +
+#   facet_wrap(~category, ncol=n_levels) +
+#   theme_bw() +
+#   theme(panel.grid=element_blank(),
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank(),
+#         legend.position='none')
+# 
+# ggsave(filename=paste0('figures/fit_', myvar, '.png'), epred_plot)
 write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))
