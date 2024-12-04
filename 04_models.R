@@ -11,7 +11,7 @@ library(fields)
 # options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'voicing'
+myvar <- 'extreme_roundedness'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
