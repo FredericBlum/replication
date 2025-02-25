@@ -11,7 +11,7 @@ library(fields)
 # options(bitmapType='cairo')
 
 # What levels are we modeling?
-myvar <- 'extreme_roundedness'
+myvar <- 'voicing'
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -48,30 +48,32 @@ myPropVars <- read_csv('data/data.csv', na=c('')) %>%
 n_levels <- length(myPropVars)
 
 data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
-  # Some languages have the exact same coordinates!
-  filter(!language %in% c('pana1310', 'yaga1256', 'sher1256')) %>% 
-  # Dialect-level data makes problems with glottolog matrix
-  filter(!language %in% c(
-    'chim1313', 'vedi1234', 'mike1243', 'zafi1234',
-    'anta1259', 'anta1260', 'anta1261', 'anta1262'
-  ))
+  filter(language %in% colnames(phylo_vcv)) %>% 
+  mutate(language = droplevels(language))
 
 # Adapted from Hedvig, who based this on code from Sam Passmore
+# add a check to select only the best glottocode in the data
+# duplicated gcodes are probably the problem
 languages <- data %>%
-  distinct(language, longitude, latitude) %>% 
-  mutate(long_lat=paste0(longitude,"_", latitude)) %>% 
+  distinct(language, latitude, longitude) %>% 
+  mutate(long_lat=paste0(longitude, "_", latitude)) %>% 
   mutate(dup=duplicated(long_lat) + duplicated(long_lat, fromLast=TRUE) ) %>% 
-  mutate(longitude=ifelse(dup > 0, jitter(longitude, factor=2), longitude)) %>% 
-  mutate(latitude=ifelse(dup > 0, jitter(latitude, factor=2), latitude))
+  mutate(
+    longitude_jit = ifelse(dup>0, jitter(longitude, factor = 10), longitude),
+    latitude_jit = ifelse(dup>0, jitter(latitude, factor = 10), latitude)
+    )
 
 # rgrambank, vcv
 library(rgrambank)
-coords <- languages %>% dplyr::select(longitude, latitude) %>%as.matrix()
+library(matrixcalc) # check positive-definiteness
+
+coords <- languages %>% dplyr::select(longitude_jit, latitude_jit) %>% as.matrix()
 kappa=2 # smoothness parameter as recommended by Dinnage et al. (2020)
 sigma=c(1, 1.15) # Sigma parameter. First value is not used. 
-spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars =sigma, kappa=kappa)$varcov
+spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars=sigma, kappa=kappa)$varcov
 dimnames(spatial_vcv) <- list(languages$language, languages$language)
 
+is.positive.definite(spatial_vcv)
 data2 <-  list(phylo_vcv=phylo_vcv, spatial_vcv=spatial_vcv)
 
 #############################
@@ -81,9 +83,7 @@ priors_in <- list(
   intercepts=lapply(2:n_levels, function(i) {
     prior(normal(0, 1), class=Intercept, dpar='Intercept')}),
   sd=lapply(2:n_levels, function(i) {
-    prior(gamma(3, 30), class=sd, dpar='sd')})#,
-  #sdgp=lapply(2:n_levels, function(i) {
-  #  prior(gamma(3, 30), class=sdgp, dpar='sdgp')})
+    prior(gamma(3, 30), class=sd, dpar='sd')})
 )
 
 priors <- c(prior(gamma(1, 1), class=phi))
@@ -115,7 +115,8 @@ mod <- data %>%
    family='dirichlet',
    formula=respDir ~ 1 + (1|concept) + 
      (1 | gr(phylo_id, cov=phylo_vcv)) +
-     (1 | gr(spatial_id, cov=spatial_vcv)),
+     (1 | gr(spatial_id, cov=spatial_vcv))
+   ,
    prior=priors,
    silent=0,
    backend='cmdstanr',

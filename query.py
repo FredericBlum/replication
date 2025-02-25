@@ -5,12 +5,12 @@ import csv
 import sqlite3
 
 # SQLite queries
-CLTS = """ATTACH DATABASE "clts.sqlite" AS clts;"""
-JSS = """ATTACH DATABASE "johanssonsoundsymbolic.sqlite" AS jss;"""
+CLTS = """ATTACH DATABASE "data/clts.sqlite3" AS clts;"""
+JSS = """ATTACH DATABASE "data/johanssonsoundsymbolic.sqlite3" AS jss;"""
 QUERY = 'query.sql'
 
 # Load Lexibank
-db = sqlite3.connect('lexibank2.sqlite3')
+db = sqlite3.connect('data/lexibank.sqlite3')
 cursor = db.cursor()
 
 # Load query
@@ -33,7 +33,7 @@ header = [
     ]
 
 
-with open('data.csv', 'w', encoding='utf8', newline='') as f:
+with open('data/data.csv', 'w', encoding='utf8', newline='') as f:
     writer = csv.writer(f, delimiter=',')
     writer.writerow(header)
     writer.writerows(table)

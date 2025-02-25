@@ -4,11 +4,7 @@ library(tidyr)
 library(tibble)
 library(forcats)
 
-<<<<<<< HEAD
-myvar <- 'height'
-=======
 myvar <- 'voicing'
->>>>>>> a27e615901c6bb0fd10ad012b68afd9b8bc55e3d
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
@@ -18,15 +14,13 @@ myvar <- 'voicing'
 # 8: extreme_roundedness
 # 10: position_voicing
 
-folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
-
 #############################
 ### Functions             ###
 #############################
 odds <- function(x) {return(x / (1 - x))}
 
 countBy <- function(groupingVar, normBy, dataSource) {
-  # Transform counts to proportions
+  # Transform counts to proportionsŋ
   out <- dataSource %>%
     drop_na(groupingVar) %>% 
     # changing across() to all_of, lets see if this breaks things
@@ -73,8 +67,8 @@ df <- read_csv('data/data.csv', na=c('')) %>%
   ) %>% 
   filter(
     !is.na(macroarea),
-    !(macroarea %in% c('Eastern Nigeria', 'Southeast Asia', 'Northeast Africa'))
-  ) 
+    macroarea!='papunesia'
+    ) 
 
 # Words that are uncommonly long/short
 avg_length <- df %>% group_by(concept) %>% summarise(mean=mean(nPhonemesPerWord))

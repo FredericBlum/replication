@@ -6,6 +6,23 @@ This repository is the current status of a replication study of Johansson et al.
 
 In order to use `cmdstanr` as backend for brms/Stan, you need to have a running installation of `cmdstan` on your computer. You can follow the install recommendations [here](https://github.com/stan-dev/cmdstanr?tab=readme-ov-file#installation).
 
+## Downloading the data
+
+```shell
+pip install pycldf
+```
+
+```shell
+git clone https://github.com/cldf-clts/clts data/clts --branch v2.3.0
+git clone https://github.com/lexibank/lexibank-analysed.git data/lexibank-analysed --branch v2.0
+git clone https://github.com/lexibank/johanssonsoundsymbolic data/johanssonsoundsymbolic
+
+rm data/*.sqlite3
+cldf createdb data/clts/cldf-metadata.json data/clts.sqlite3
+cldf createdb data/lexibank-analysed/cldf/wordlist-metadata.json data/lexibank.sqlite3
+cldf createdb data/johanssonsoundsymbolic/cldf/cldf-metadata.json data/johanssonsoundsymbolic.sqlite3
+```
+
 ## File overview
 
 - `01_formatting.R` is the preprocessing script from the original authors. Not really modified from my side and will not be relevant for the replication

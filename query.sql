@@ -19,6 +19,8 @@ WITH lb_segments
         f.cldf_languagereference = l.cldf_id
             AND
         f.cldf_parameterreference = p.cldf_id
+            AND
+        l.Selexion = 1
     UNION ALL
     SELECT
         wd_id,
@@ -201,5 +203,7 @@ WHERE
         AND
     lb.unicode != ''
         AND
-    clts.name NOT LIKE '%tone' 
+    clts.name NOT LIKE '%tone'
+        AND
+    clts.name NOT LIKE '%unspecified%'
 ;

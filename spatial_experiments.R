@@ -17,9 +17,10 @@ data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>%
 languages <- data %>%
   distinct(language, longitude, latitude) %>% 
   mutate(long_lat = paste0(longitude,"_", latitude)) %>% 
-  mutate(dup = duplicated(long_lat) + duplicated(long_lat, fromLast = TRUE) ) %>% 
-  mutate(longitude = ifelse(dup > 0, jitter(longitude, factor = 2), longitude)) %>% 
-  mutate(latitude = ifelse(dup > 0, jitter(latitude, factor = 2), latitude))
+  mutate(dup = duplicated(long_lat) + duplicated(long_lat, fromLast = TRUE)) %>%
+  # %>% 
+  # mutate(longitude = ifelse(dup > 0, jitter(longitude, factor = 2), longitude)) %>% 
+  # mutate(latitude = ifelse(dup > 0, jitter(latitude, factor = 2), latitude))
 
 # Check if no exact matches keep existing
 languages %>% group_by(longitude, latitude) %>% 
