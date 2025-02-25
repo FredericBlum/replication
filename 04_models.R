@@ -61,10 +61,10 @@ languages <- data %>%
     longitude_jit = jitter(longitude, factor = 3),
     latitude_jit = jitter(latitude, factor = 3),
     diff = latitude-latitude_jit
-    ) #%>% 
+    ) %>% 
   # .[636:743,]
   # arrange(diff)
-  #filter(dup!=1)
+  filter(dup!=1)
 
 # rgrambank, vcv
 library(rgrambank)
