@@ -52,22 +52,25 @@ data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>%
   mutate(language = droplevels(language))
 
 # Adapted from Hedvig, who based this on code from Sam Passmore
-# add a check to select only the best glottocode in the data
-# duplicated gcodes are probably the problem
 languages <- data %>%
+  mutate(latitude=round(latitude, 2), longitude=round(longitude, 2)) %>% 
   distinct(language, latitude, longitude) %>% 
   mutate(long_lat=paste0(longitude, "_", latitude)) %>% 
-  mutate(dup=duplicated(long_lat) + duplicated(long_lat, fromLast=TRUE) ) %>% 
+  mutate(dup=duplicated(long_lat) + duplicated(long_lat, fromLast=TRUE)) %>% 
   mutate(
-    longitude_jit = ifelse(dup>0, jitter(longitude, factor = 10), longitude),
-    latitude_jit = ifelse(dup>0, jitter(latitude, factor = 10), latitude)
-    )
+    longitude_jit = jitter(longitude, factor = 3),
+    latitude_jit = jitter(latitude, factor = 3),
+    diff = latitude-latitude_jit
+    ) #%>% 
+  # .[636:743,]
+  # arrange(diff)
+  #filter(dup!=1)
 
 # rgrambank, vcv
 library(rgrambank)
 library(matrixcalc) # check positive-definiteness
 
-coords <- languages %>% dplyr::select(longitude_jit, latitude_jit) %>% as.matrix()
+coords <- languages %>% dplyr::select(longitude, latitude) %>% as.matrix()
 kappa=2 # smoothness parameter as recommended by Dinnage et al. (2020)
 sigma=c(1, 1.15) # Sigma parameter. First value is not used. 
 spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars=sigma, kappa=kappa)$varcov
