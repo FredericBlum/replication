@@ -58,19 +58,19 @@ languages <- data %>%
   mutate(long_lat=paste0(longitude, "_", latitude)) %>% 
   mutate(dup=duplicated(long_lat) + duplicated(long_lat, fromLast=TRUE)) %>% 
   mutate(
-    longitude_jit = jitter(longitude, factor = 3),
-    latitude_jit = jitter(latitude, factor = 3),
+    longitude_jit = ifelse(dup>0, jitter(longitude, factor=2), longitude),
+    latitude_jit = ifelse(dup>0, jitter(latitude, factor=2), latitude),
     diff = latitude-latitude_jit
-    ) %>% 
+    ) #%>% 
   # .[636:743,]
   # arrange(diff)
-  filter(dup!=1)
+  # filter(dup!=1)
 
 # rgrambank, vcv
 library(rgrambank)
 library(matrixcalc) # check positive-definiteness
 
-coords <- languages %>% dplyr::select(longitude, latitude) %>% as.matrix()
+coords <- languages %>% dplyr::select(longitude_jit, latitude_jit) %>% as.matrix()
 kappa=2 # smoothness parameter as recommended by Dinnage et al. (2020)
 sigma=c(1, 1.15) # Sigma parameter. First value is not used. 
 spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars=sigma, kappa=kappa)$varcov
