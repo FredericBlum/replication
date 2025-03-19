@@ -11,11 +11,8 @@ library(fields)
 # options(bitmapType='cairo')
 
 # What levels are we modeling?
-<<<<<<< HEAD
-myvar <- 'position_voicing'
-=======
-myvar <- 'extreme'
->>>>>>> 91cb0bde708de3912c0571777709cf1761c673f9
+myvar <- 'manner_voicing'
+
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
@@ -77,6 +74,9 @@ library(matrixcalc) # check positive-definiteness
 coords <- languages %>% dplyr::select(longitude_jit, latitude_jit) %>% as.matrix()
 kappa=2 # smoothness parameter as recommended by Dinnage et al. (2020)
 sigma=c(1, 1.15) # Sigma parameter. First value is not used. 
+
+# If given coords: haversin. If given distances: those distances
+# fields::rdist.earth
 spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars=sigma, kappa=kappa)$varcov
 dimnames(spatial_vcv) <- list(languages$language, languages$language)
 

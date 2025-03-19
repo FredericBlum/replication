@@ -5,6 +5,10 @@ library(purrr)
 library(readr)
 library(viridis)
 
+library(tidyr)
+library(xtable)
+
+
 ## Load data
 soundClasses <- c(
   'backness', 'height', 'roundedness', 'extreme', 'extreme_roundedness',
@@ -56,7 +60,27 @@ combined <- df %>%
     !(myvar %in% c('voicing', 'roundedness') & mean < 0)
     )
 
+
+################################################################################################
+# Table stuff for paper
 combined %>% select(-word_dim, -topCardinal) %>% write_csv(, file='data/final_results.csv')
+
+results_table <- combined %>% group_by(myvar, result, outcome) %>% 
+  summarise(n=n()) %>% 
+  pivot_wider(names_from = c(result, outcome), values_from = n, values_fill=0)
+
+colnames(results_table) <- c("Category", "Original_strong", "Original_weak", "New_weak", 'New_strong')
+results_table <- results_table %>% select(Category, Original_strong, New_strong, Original_weak, New_weak)
+
+print(xtable(results_table), type = "latex", include.rownames=FALSE)
+
+
+################################
+# Highest results
+combined %>% filter(concept %in% c('DUST', 'TASTE')) %>% 
+  arrange(concept, myvar, result, outcome)
+
+
 
 # Plot for each sound class
 for (sc in soundClasses) {
@@ -84,7 +108,7 @@ for (sc in soundClasses) {
     scale_fill_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
     theme_bw() +
     theme(
-      panel.spacing = unit(6, "lines"),
+      panel.spacing = unit(0.5, "lines"),
       panel.grid.major.y = element_blank() ,
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
@@ -92,5 +116,5 @@ for (sc in soundClasses) {
       strip.text.x = element_text(size=30),
       legend.position='none'
       )
-  ggsave(filename=paste0('figures/summary_', sc, '.png'), width=30,  height=30, units='cm', dpi=500)
+  ggsave(filename=paste0('figures/summary_', sc, '.pdf'), dpi=500)
 }

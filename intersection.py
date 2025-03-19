@@ -16,7 +16,7 @@ def read_cl(path):
 BASE = "../cldf_resources/concepticon-data/concepticondata/conceptlists/"
 JOHANSSON = BASE + "Johansson-2020-344.tsv"
 TAD_100 = BASE + "Tadmor-2009-100.tsv"
-SWAD_200 = BASE + "Swadesh-1952-200.tsv"
+SWAD_100 = BASE + "Swadesh-1955-100.tsv"
 ASJP_40 = BASE + "Holman-2008-40.tsv"
 
 original = defaultdict()
@@ -27,29 +27,14 @@ with UnicodeDictReader(JOHANSSON, delimiter='\t') as reader:
         change[line['LEXIBANK_GLOSS']] = line["CONCEPTICON_GLOSS"]
 
 tadmor = read_cl(TAD_100)
-swadesh = read_cl(SWAD_200)
+swadesh = read_cl(SWAD_100)
 holman = read_cl(ASJP_40)
 
 lists = defaultdict()
 
-lists['Swadesh-200'] = swadesh
+lists['Swadesh-100'] = swadesh
 lists['Tadmor-100'] = tadmor
 lists['Holman-40'] = holman
-
-orig_results = []
-with open('original_results.csv', mode='r', encoding="utf8") as file:
-    data = csv.reader(file)
-    for i, line in enumerate(data):
-        mod = change[line[0].replace('_', ' ').replace('fs', '(fs)').replace('ms', '(ms)')]
-        if i == 0:
-            orig_results.append(line)
-        elif mod != '':
-            line[0] = mod
-            orig_results.append(line)
-
-with open('original_results_mapped.csv', 'w', encoding='utf8', newline='') as f:
-    writer = csv.writer(f, delimiter='\t')
-    writer.writerows(orig_results)
 
 results = []
 with open('data/final_results.csv', mode='r', encoding="utf8") as file:
@@ -57,31 +42,62 @@ with open('data/final_results.csv', mode='r', encoding="utf8") as file:
     headers = next(data)
 
     for line in data:
-        results.append([line[0], line[1], line[8], line[11]])
+        results.append([
+            line[0],  # Concept
+            line[1],  # Feature
+            line[7],  # New/original
+            line[9]   # Strong/Weak
+            ])
 
 table = []
-header = ['List', 'Strong (n)', 'Strong (%)', 'Weak (n)', 'Weak (%)']
+header = ['List',  # 'Strong (n)', 'Strong (%)',
+          'Weak (n)', 'Weak (%)', 'Replicated']
 
+rep_score = defaultdict()
+# Cycling through all basic vocabulary l ists that interest us
 for bsc_vcb in lists:
+    print('------------')
+    print('Results for', bsc_vcb)
     strong = []
     all_results = []
+    rep = defaultdict()
+    unique_hit = []
+    hit = 0
+
+    # Establish baseline for quantiyfying the replication
+    for item in results:
+        if item[0] in lists[bsc_vcb] and item[2] == 'Original Results':
+            if item[0] not in rep:
+                rep[item[0]] = []
+            rep[item[0]].append(item[1])  # Feature
+
+    # Go through new results
     for entry in results:
-        if entry[2] == 'New Results' and original[entry[0]] in lists[bsc_vcb]:
+        if entry[2] == 'New Results' and entry[0] in lists[bsc_vcb]:
             if entry[0] not in all_results:
                 all_results.append(entry[0])
-            if entry[3] == 'Strong' and entry[0] not in strong:
+            if entry[3] == 'Strong':
                 strong.append(entry[0])
 
-            print(bsc_vcb, entry[0], entry[1], entry[2], entry[3])
+            # Check if pattern had been observed previously
+            if entry[0] in rep:
+                if entry[1] in rep[entry[0]]:
+                    print(entry)
+                    if entry[0] not in unique_hit:
+                        unique_hit.append(entry[0])
+                        hit += 1
 
-    print(bsc_vcb, strong)
-
+            # print(bsc_vcb, entry[0], entry[1], entry[2], entry[3])
+    rep_score[bsc_vcb] = hit / len(lists[bsc_vcb])
+    print(len(rep))
     table.append([
         bsc_vcb,
-        len(strong),
-        len(strong)/len(lists[bsc_vcb]),
+        # No strong results, so I can leave that out
+        # len(strong),
+        # len(strong)/len(lists[bsc_vcb]),
         len(all_results),
-        len(all_results)/len(lists[bsc_vcb])
+        len(all_results)/len(lists[bsc_vcb]),
+        hit / len(rep)
         ])
 
 print(tabulate(
