@@ -33,7 +33,7 @@ header = [
     ]
 
 
-with open('data/data.csv', 'w', encoding='utf8', newline='') as f:
+with open('../02_analysis/data/data.csv', 'w', encoding='utf8', newline='') as f:
     writer = csv.writer(f, delimiter=',')
     writer.writerow(header)
     writer.writerows(table)

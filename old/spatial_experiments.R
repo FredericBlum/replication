@@ -9,10 +9,7 @@ library(matrixcalc) # check PD
 ### Load data             ###
 #############################
 myvar <- 'roundedness'
-data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
-  # Some languages have the exact same coordinates!
-  filter(!language %in% c('pana1310', 'yaga1256', 'sher1256'))
-
+data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c('')))
 # Adapted from Hedvig, who based this on code from Sam Passmore
 languages <- data %>%
   distinct(language, longitude, latitude) %>% 

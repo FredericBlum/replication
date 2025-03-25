@@ -6,7 +6,6 @@
 # We thank the authors for sharing their code, making it possible to re-use
 # this method easily for new studies, and thus actively helping other scholars.
 ###############################################################################
-
 library(ape)
 library(readr)
 library(dplyr)
@@ -29,21 +28,20 @@ get_chain <- function(.id) {
   return(chain)
 }
 
-get_names <- function(.idf, db=families)
+get_names <- function(.idf, db=glottolog)
   sapply(.idf, function(.id)
     db[db$id == .id, ]$name)
-get_num_languages <- function(.idf, db=families)
+get_num_languages <- function(.idf, db=glottolog)
   sapply(.idf, function(.id)
     db[db$id == .id, ]$child_language_count)
-get_num_families <- function(.idf, db=families)
+get_num_families <- function(.idf, db=glottolog)
   sapply(.idf, function(.id)
     db[db$id == .id, ]$child_family_count)
-get_parent <- function(.id, db=families){
+get_parent <- function(.id, db=glottolog){
   db[db$id == .id, ]$parent_id
 }
 
-build_phylos <- function(.lfd, .var, .micro_family=FALSE
-                         , distance=FALSE) {
+build_phylos <- function(.lfd, .var, .micro_family=FALSE, distance=FALSE) {
   .var <- enquo(.var)
   ## extract family chain
   chains <- sapply(.lfd$id,
@@ -89,45 +87,25 @@ dist.b <- function(X) {
 
 
 ## build data from glottolog
+glottolog <- read_csv('language.csv')
+glottocodes <- glottolog %>% select(id, Family_id, Name)
 
-## extract glottolog info
-## https://cdstar.shh.mpg.de/bitstreams/EAEA0-D501-DBB8-65C4-0/glottolog_languoid.csv.zip
-families <- read_csv('languoid.csv')
-
-## build family dataset
-## extract language data
-
-lang_gloto_data <- families %>%
-  select(id, family_id, parent_id, name)
-
-fam_ids <- families %>% pull(family_id)
-fam_gloto_data <- families %>%
-  select(id, name)
+fam_ids <- glottolog %>% pull(Family_id)
+fam_codes <- glottolog %>% select(id, Name)
 
 ## we do a double left join to have the data in two columns
-lang_fam_gloto_data <-
-  left_join(lang_gloto_data,
-            fam_gloto_data,
-            by=c('family_id'='id'),
+combined_data <-
+  left_join(glottocodes, fam_codes, by=c('Family_id'='id'),
             suffix=c('_language', '_macro_family')) %>%
-  left_join(fam_gloto_data,
-            by=c('parent_id'='id'),
-            suffix=c('_macro_family', '_micro_family')) %>%
-  rename(name_micro_family=name) %>%
-  mutate(name_micro_family =
-           case_when(is.na(name_micro_family) ~ name_language,
-                     TRUE ~ name_micro_family),
-         name_macro_family =
-           case_when(is.na(name_macro_family) ~ name_language,
-                     TRUE ~ name_macro_family)) %>% 
-  rename(Family=name_macro_family)
+  mutate(name_macro_family =
+           case_when(is.na(Name_macro_family) ~ Name_language, TRUE ~ Name_macro_family)) %>% 
+  rename(Family=Name_macro_family)
 
 # Run functions
 myvar <- 'voicing'
-langs <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
-  distinct(language)
+langs <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% distinct(language)
   
-aff_phylo <- lang_fam_gloto_data %>%
+aff_phylo <- combined_data %>%
   filter(id %in% langs$language) %>% 
   build_phylos(id, .micro_family=FALSE)
 

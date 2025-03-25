@@ -9,5 +9,6 @@ johanssonsoundsymbolic/
 models/
 data_derived/repl2024*
 old/data_derived/repl2024*
+02_analysis/data_derived/repl2024_*
 data.csv
 *.sqlite3
