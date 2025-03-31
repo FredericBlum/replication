@@ -17,11 +17,13 @@ cd pre_analysis
 git clone https://github.com/cldf-clts/clts data/clts --branch v2.3.0
 git clone https://github.com/lexibank/lexibank-analysed.git data/lexibank-analysed --branch v2.0
 git clone https://github.com/lexibank/johanssonsoundsymbolic data/johanssonsoundsymbolic
+git clone https://github.com/glottolog/glottolog-cldf data/glottolog
 
 rm data/*.sqlite3
 cldf createdb data/clts/cldf-metadata.json data/clts.sqlite3
 cldf createdb data/lexibank-analysed/cldf/wordlist-metadata.json data/lexibank.sqlite3
 cldf createdb data/johanssonsoundsymbolic/cldf/cldf-metadata.json data/johanssonsoundsymbolic.sqlite3
+cldf createdb data/glottolog/cldf/cldf-metadata.json data/glottolog.sqlite3
 ```
 
 ## File overview

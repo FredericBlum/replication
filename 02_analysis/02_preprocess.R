@@ -56,19 +56,16 @@ countBy <- function(groupingVar, normBy, dataSource) {
 #############################
 ### Load data             ###
 #############################
-df <- read_csv('data/data.csv', na=c('')) %>%
+df <- read_csv('../01_preprocessing/data.csv', na=c('')) %>%
   mutate_if(is.character, factor) %>%
   mutate(
     vowelConsonant=ifelse(!is.na(height), 'vowel', 'consonant'),
     family=fct_na_value_to_level(family, 'Isolate'),
     extreme_roundedness=factor(ifelse(!is.na(extreme), paste(extreme, roundedness, sep='-'), NA)),
     manner_voicing=factor(ifelse(!is.na(voicing), paste(manner, voicing, sep='-'), NA)),
-    position_voicing=factor(ifelse(!is.na(voicing), paste(position, voicing, sep='-'), NA))
-  ) %>% 
-  filter(
-    !is.na(macroarea),
-    macroarea!='papunesia'
-    ) 
+    position_voicing=factor(ifelse(!is.na(voicing), paste(position, voicing, sep='-'), NA)),
+    macroarea = as.character(macroarea)
+  )
 
 # Words that are uncommonly long/short
 avg_length <- df %>% group_by(concept) %>% summarise(mean=mean(nPhonemesPerWord))
