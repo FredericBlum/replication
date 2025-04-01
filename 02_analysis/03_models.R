@@ -8,11 +8,6 @@ library(dplyr)
 library(rgrambank)
 library(matrixcalc) # check positive-definiteness
 
-# library(fields)
-
-# Cluster plotting
-# options(bitmapType='cairo')
-
 # What levels are we modeling?
 myvar <- 'voicing'
 
@@ -132,7 +127,7 @@ mod <- data %>%
    silent=0,
    backend='cmdstanr',
    control=list(adapt_delta=0.85, max_treedepth=10),
-   file=paste0('models/repl2024_lb2_', myvar, '.rds'),
+   file=paste0('models/lb2_', myvar, '.rds'),
    threads=threading(4),
    iter=5000, warmup=2500, chains=4, cores=4
    )
@@ -142,7 +137,7 @@ mod <- data %>%
 #############################
 new_data <- data %>% distinct(concept)
 new_data <- tibble(concept=unique(data$concept), family='a', language='a')
-fit_name <- paste0(folder_data_derived, '/repl2024_fit_', myvar, '.rds')
+fit_name <- paste0(folder_data_derived, '/fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
@@ -189,3 +184,4 @@ epred_plot <- preds_or %>%
 
 # ggsave(filename=paste0('figures/fit_', myvar, '.png'), epred_plot)
 write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))
+
