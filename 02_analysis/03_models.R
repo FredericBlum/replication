@@ -8,13 +8,8 @@ library(dplyr)
 library(rgrambank)
 library(matrixcalc) # check positive-definiteness
 
-# library(fields)
-
-# Cluster plotting
-# options(bitmapType='cairo')
-
 # What levels are we modeling?
-myvar <- 'position_voicing'
+myvar <- 'voicing'
 
 # 2: voicing, roundedness
 # 3: height, backness
@@ -189,3 +184,4 @@ epred_plot <- preds_or %>%
 
 # ggsave(filename=paste0('figures/fit_', myvar, '.png'), epred_plot)
 write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))
+
