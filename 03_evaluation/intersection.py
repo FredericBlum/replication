@@ -56,7 +56,7 @@ with open('original_results.csv', mode='r', encoding="utf8") as file:
 #     print(item)
 
 # Write mapped original results to file for R plots
-with open('../analysis/original_results_mapped.csv', 'w', encoding='utf8', newline='') as f:
+with open('../02_analysis/original_results_mapped.csv', 'w', encoding='utf8', newline='') as f:
     writer = csv.writer(f, delimiter='\t')
     writer.writerows(orig_results)
 
@@ -71,7 +71,7 @@ lists = {name: read_cl(file) for name, file in [
 results = []
 table = []
 
-with open('../analysis/data/final_results.csv', mode='r', encoding="utf8") as file:
+with open('../02_analysis/data/final_results.csv', mode='r', encoding="utf8") as file:
     data = csv.reader(file)
     headers = next(data)
     for line in data:

@@ -18,7 +18,16 @@ git clone https://github.com/cldf-clts/clts data/clts --branch v2.3.0
 git clone https://github.com/lexibank/lexibank-analysed.git data/lexibank-analysed --branch v2.0
 git clone https://github.com/lexibank/johanssonsoundsymbolic data/johanssonsoundsymbolic
 git clone https://github.com/glottolog/glottolog-cldf data/glottolog
+```
 
+We have to add the missing concepts to the database from the original study.
+
+```shell
+python check_conceptlists.py
+cat missing_concepts.csv >> data/johanssonsoundsymbolic/cldf/parameters.csv
+```
+
+```shell
 rm data/*.sqlite3
 cldf createdb data/clts/cldf-metadata.json data/clts.sqlite3
 cldf createdb data/lexibank-analysed/cldf/wordlist-metadata.json data/lexibank.sqlite3
