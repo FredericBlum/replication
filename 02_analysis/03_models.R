@@ -5,11 +5,10 @@ library(ggplot2)
 library(cmdstanr)
 library(tidybayes)
 library(dplyr)
-library(rgrambank)
 library(matrixcalc) # check positive-definiteness
 
 # What levels are we modeling?
-myvar <- 'voicing'
+myvar <- 'position'
 
 # 2: voicing, roundedness
 # 3: height, backness
@@ -33,8 +32,18 @@ odds <- function(x) {return(x / (1 - x))}
 #############################
 ### Load data             ###
 #############################
-phylo_vcv <- read.csv('../01_preprocessing/distances.csv', row.names=1) %>% as.matrix()
+data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c('')))
+
+phylo_vcv <- read.csv('../01_preprocessing/vcv_phylo.csv', row.names=1) %>% as.matrix()
 isSymmetric.matrix(phylo_vcv)
+
+geo_vcv <- read.csv('../01_preprocessing/vcv_geo.csv', row.names=1) %>% as.matrix()
+is.positive.definite(geo_vcv)
+
+data2 <-  list(
+  phylo_vcv=phylo_vcv,
+  geo_vcv=geo_vcv
+)
 
 myPropVars <- read_csv('../01_preprocessing/data.csv', na=c('')) %>%
   mutate(
@@ -47,39 +56,6 @@ myPropVars <- read_csv('../01_preprocessing/data.csv', na=c('')) %>%
 
 n_levels <- length(myPropVars)
 
-data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c(''))) %>% 
-  filter(language %in% colnames(phylo_vcv)) %>% 
-  mutate(language = droplevels(language))
-
-# Adapted from Hedvig, who based this on code from Sam Passmore
-languages <- data %>%
-  mutate(latitude=round(latitude, 2), longitude=round(longitude, 2)) %>% 
-  distinct(language, latitude, longitude) %>% 
-  mutate(long_lat=paste0(longitude, "_", latitude)) %>% 
-  mutate(dup=duplicated(long_lat) + duplicated(long_lat, fromLast=TRUE)) %>% 
-  mutate(
-    longitude_jit = ifelse(dup>0, jitter(longitude, factor=2), longitude),
-    latitude_jit = ifelse(dup>0, jitter(latitude, factor=2), latitude),
-    diff = latitude-latitude_jit
-    )
-
-# rgrambank, vcv
-
-coords <- languages %>% dplyr::select(longitude_jit, latitude_jit) %>% as.matrix()
-kappa=2 # smoothness parameter as recommended by Dinnage et al. (2020)
-sigma=c(1, 1.15) # Sigma parameter. First value is not used. 
-
-# If given coords: haversin. If given distances: those distances
-# fields::rdist.earth
-spatial_vcv <- varcov.spatial.3D(coords=coords, cov.pars=sigma, kappa=kappa)$varcov
-dimnames(spatial_vcv) <- list(languages$language, languages$language)
-
-is.positive.definite(spatial_vcv)
-
-data2 <-  list(
-  phylo_vcv=phylo_vcv,
-  spatial_vcv=spatial_vcv
-  )
 
 #############################
 ### Priors                ###
@@ -107,7 +83,7 @@ for (l in 1:length(priors_in)) {
 #   family='dirichlet',
 #   formula=respDir ~ 1 + (1|concept) + 
 #     (1 | gr(family, cov=phylo_vcv)) +
-#     (1 | gr(language, cov=spatial_vcv)) 
+#     (1 | gr(language, cov=geo_vcv)) 
 # )
 
 #############################
@@ -121,13 +97,13 @@ mod <- data %>%
    formula=
      respDir ~ 1 + (1|concept) + 
      (1 | gr(phylo_id, cov=phylo_vcv)) +
-     (1 | gr(spatial_id, cov=spatial_vcv)
+     (1 | gr(spatial_id, cov=geo_vcv)
       ),
    prior=priors,
    silent=0,
    backend='cmdstanr',
    control=list(adapt_delta=0.85, max_treedepth=10),
-   file=paste0('models/lb2_', myvar, '.rds'),
+   #file=paste0('models/lb2_', myvar, '.rds'),
    threads=threading(4),
    iter=5000, warmup=2500, chains=4, cores=4
    )

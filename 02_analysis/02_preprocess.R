@@ -4,7 +4,7 @@ library(tidyr)
 library(tibble)
 library(forcats)
 
-myvar <- 'backness'
+myvar <- 'voicing'
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
