@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --cpus-per-task 4
+#SBATCH --cpus-per-task 2
 #SBATCH --mem 10G
 #SBATCH -J repl
 #SBATCH --output=%j.%x.out

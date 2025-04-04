@@ -8,7 +8,7 @@ library(dplyr)
 library(matrixcalc) # check positive-definiteness
 
 # What levels are we modeling?
-myvar <- 'voicing'
+myvar <- 'position_voicing'
 
 # 2: voicing, roundedness
 # 3: height, backness
