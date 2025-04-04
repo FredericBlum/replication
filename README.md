@@ -13,9 +13,9 @@ pip install pycldf
 ```
 
 ```shell
-cd pre_analysis
+cd 01_preprocessing
 git clone https://github.com/cldf-clts/clts data/clts --branch v2.3.0
-git clone https://github.com/lexibank/lexibank-analysed.git data/lexibank-analysed --branch v2.0
+git clone https://github.com/lexibank/lexibank-analysed.git data/lexibank-analysed
 git clone https://github.com/lexibank/johanssonsoundsymbolic data/johanssonsoundsymbolic
 git clone https://github.com/glottolog/glottolog-cldf data/glottolog
 ```
