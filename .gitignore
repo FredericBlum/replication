@@ -8,8 +8,7 @@ clts/
 johanssonsoundsymbolic/
 models/
 glottolog/
-data_derived/repl2024*
 old/data_derived/repl2024*
-02_analysis/data_derived/repl2024_*
+02_analysis/data_derived/fit*
 data.csv
 *.sqlite3

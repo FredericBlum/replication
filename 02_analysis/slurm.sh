@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --cpus-per-task 16
-#SBATCH --mem 24G
+#SBATCH --mem 80G
 #SBATCH -J repl
 #SBATCH --output=%j.%x.out
 #SBATCH --error=%j.%x.err
