@@ -8,7 +8,7 @@ library(dplyr)
 library(matrixcalc) # check positive-definiteness
 
 # What levels are we modeling?
-myvar <- 'position_voicing'
+myvar <- 'extreme_roundedness'
 
 # 2: voicing, roundedness
 # 3: height, backness
@@ -62,9 +62,9 @@ n_levels <- length(myPropVars)
 #############################
 priors_in <- list(
   intercepts=lapply(2:n_levels, function(i) {
-    prior(normal(0, 1), class=Intercept, dpar='Intercept')}),
+    prior(normal(0, 0.5), class=Intercept, dpar='Intercept')}),
   sd=lapply(2:n_levels, function(i) {
-    prior(gamma(3, 30), class=sd, dpar='sd')})
+    prior(gamma(3, 40), class=sd, dpar='sd')})
 )
 
 priors <- c(prior(gamma(1, 1), class=phi))
@@ -81,9 +81,9 @@ for (l in 1:length(priors_in)) {
 #   data=data,
 #   data2=data2,
 #   family='dirichlet',
-#   formula=respDir ~ 1 + (1|concept) + 
+#   formula=respDir ~ 1 + (1|concept) +
 #     (1 | gr(family, cov=phylo_vcv)) +
-#     (1 | gr(language, cov=geo_vcv)) 
+#     (1 | gr(language, cov=geo_vcv))
 # )
 
 #############################
@@ -103,9 +103,9 @@ mod <- data %>%
    silent=0,
    backend='cmdstanr',
    control=list(adapt_delta=0.85, max_treedepth=10),
-   file=paste0('models/lb2_', myvar, '.rds'),
+   file=paste0('models/lb2_large_', myvar, '.rds'),
    threads=threading(4),
-   iter=5000, warmup=2500, chains=4, cores=4
+   iter=10000, warmup=2500, chains=4, cores=4
    )
 
 #############################

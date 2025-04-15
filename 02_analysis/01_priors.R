@@ -31,16 +31,16 @@ phi <- rgamma(n, shape=1, rate=1) %>%
         plot.title = element_text(size = 14)) +  
   labs(title = "phi ~ gamma(1, 1)")
 
-sd <- rgamma(n, shape=3, rate=30) %>% 
+sd <- rgamma(n, shape=3, rate=40) %>% 
   tibble() %>% 
-  mutate(group = 'sd%~% gamma(3, 30)') %>% 
+  mutate(group = 'sd%~% gamma(3, 40)') %>% 
   ggplot(aes(x=.)) + 
   geom_density(aes(fill = group)) +
   scale_y_continuous(breaks = NULL, name = "Density of values") +
   scale_fill_viridis(discrete = T, alpha = 0.7, end = 0.7) +
   theme(legend.position = "none",
         plot.title = element_text(size = 14)) +  
-  labs(title = "sd ~ gamma(3, 30)")
+  labs(title = "sd ~ gamma(3, 40)")
 
 
 all_priors <- (intercepts + phi + sd)

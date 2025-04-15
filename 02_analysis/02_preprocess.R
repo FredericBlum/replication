@@ -67,6 +67,12 @@ df <- read_csv('../01_preprocessing/data.csv', na=c('')) %>%
     macroarea = as.character(macroarea)
   )
 
+# 
+# df %>% select(unicode, extreme, roundedness, extreme_roundedness) %>%
+#   #filter(roundedness=='rounded')
+#   #filter(extreme!='high-back'& roundedness=='rounded')
+#   filter(extreme!='high-back' & roundedness=='rounded')
+#   
 # Words that are uncommonly long/short
 avg_length <- df %>% group_by(concept) %>% summarise(mean=mean(nPhonemesPerWord))
 avg_length %>% arrange(mean)
