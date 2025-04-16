@@ -97,7 +97,8 @@ for (sc in soundClasses) {
     geom_errorbar(linewidth=1.5, width=0) +
     geom_point(aes(fill=outcome), shape=21) +
     geom_vline(xintercept=0, color='red') +
-    geom_label_repel(aes(label=label), max.overlaps=99, size=5, box.padding=0.9) +
+    geom_label_repel(data=subset(combined, outcome =='Weak' & myvar==sc),  aes(label=label), max.overlaps=2, size=6, box.padding=0.5) +
+    geom_label_repel(data=subset(combined, outcome =='Strong' & myvar==sc), aes(label=label), max.overlaps=99, size=6, box.padding=0.5) +
     annotate('rect', xmin=lwr_thresh, xmax=upr_thresh, ymin=0, ymax=Inf, alpha=.1) +
     facet_wrap( ~ result, ncol=2, drop=F) +
     scale_x_continuous(
@@ -111,7 +112,7 @@ for (sc in soundClasses) {
     scale_fill_manual(name = '', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
     theme_bw() +
     theme(
-      panel.spacing = unit(0.5, "lines"),
+      panel.spacing = unit(0.2, "lines"),
       panel.grid.major.y = element_blank() ,
       axis.text.y=element_blank(),
       axis.ticks.y=element_blank(),
@@ -119,5 +120,5 @@ for (sc in soundClasses) {
       strip.text.x = element_text(size=30),
       legend.position='none'
       )
-  ggsave(filename=paste0('figures/summary_', sc, '.pdf'), dpi=500, height=15, width=7)
+  ggsave(filename=paste0('figures/summary_', sc, '.pdf'), dpi=500, height=20, width=7)
 }
