@@ -77,12 +77,10 @@ results_table <- results_table %>%
 
 print(xtable(results_table), type = "latex", include.rownames=FALSE)
 
-
 ################################
 # Highest results
 combined %>% filter(concept %in% c('DUST', 'TASTE')) %>% 
   arrange(concept, myvar, result, outcome)
-
 
 
 # Plot for each sound class
