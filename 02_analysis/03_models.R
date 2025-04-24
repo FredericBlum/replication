@@ -118,8 +118,8 @@ if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
   print('Sorry, the file does not yet exist. This may take some time.')
-  #predictions <- posterior_epred(newdata=new_data, mod, allow_new_levels=T)
-  predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T)
+  predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T, 
+                                 options(mc.cores = parallel::detectCores()))
   saveRDS(predictions, file=fit_name)
 }
 

@@ -10,6 +10,7 @@ In order to use `cmdstanr` as backend for brms/Stan, you need to have a running 
 
 ```shell
 pip install pycldf
+pip install pyconcepticon
 ```
 
 ```shell
@@ -34,6 +35,8 @@ cldf createdb data/lexibank-analysed/cldf/wordlist-metadata.json data/lexibank.s
 cldf createdb data/johanssonsoundsymbolic/cldf/cldf-metadata.json data/johanssonsoundsymbolic.sqlite3
 cldf createdb data/glottolog/cldf/cldf-metadata.json data/glottolog.sqlite3
 ```
+
+Now you can create the `data.csv` file for further processing: `python query.py`.
 
 ## File overview
 
