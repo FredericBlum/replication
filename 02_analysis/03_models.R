@@ -8,7 +8,7 @@ library(dplyr)
 library(matrixcalc) # check positive-definiteness
 
 # What levels are we modeling?
-myvar <- 'extreme_roundedness'
+myvar <- 'manner'
 
 # 2: voicing, roundedness
 # 3: height, backness
@@ -105,7 +105,7 @@ mod <- data %>%
    control=list(adapt_delta=0.85, max_treedepth=10),
    file=paste0('models/lb2_large_', myvar, '.rds'),
    threads=threading(4),
-   iter=10000, warmup=2500, chains=4, cores=4
+   iter=7500, warmup=2500, chains=4, cores=4
    )
 
 #############################
@@ -118,8 +118,7 @@ if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
   print('Sorry, the file does not yet exist. This may take some time.')
-  predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T, 
-                                 options(mc.cores = parallel::detectCores()))
+  predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T) 
   saveRDS(predictions, file=fit_name)
 }
 
