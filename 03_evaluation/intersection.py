@@ -37,7 +37,7 @@ mapped_conc = []
 # Read in original results
 with open('original_results.csv', mode='r', encoding="utf8") as file:
     data = csv.reader(file)
-    #next(data)
+    # next(data)
     for i, line in enumerate(data):
         # Check the unmapped concepts
         if line[0] not in missing_concepts:
@@ -45,7 +45,7 @@ with open('original_results.csv', mode='r', encoding="utf8") as file:
 
         if i == 0:
             mapped_conc.append(line)
-        
+
         else:
             mod = change[line[0].replace('_', ' ').replace('fs', '(fs)').replace('ms', '(ms)')]
             if mod != '':
@@ -54,7 +54,7 @@ with open('original_results.csv', mode='r', encoding="utf8") as file:
                     line[0],  # Concept
                     line[1]   # Feature
                     ])
-                
+
                 mapped_conc.append(line)
 
 
@@ -113,7 +113,7 @@ for bsc_vcb in lists:
 
     # Go through new results
     for entry in results:
-        if entry[0] in lists[bsc_vcb] and entry[2] == 'New Results': #and entry[1] != 'high-back-rounded':
+        if entry[0] in lists[bsc_vcb] and entry[2] == 'New Results':  # and entry[1] != 'high-back-rounded':
             # Get number of concepts for which an effect has been found
             if entry[0] not in all_results:
                 all_results.append(entry[0])
@@ -123,7 +123,7 @@ for bsc_vcb in lists:
                     if entry[0] not in replicated_effects:
                         replicated_effects[entry[0]] = []
                     replicated_effects[entry[0]].append(entry[1])
-                
+
                 else:
                     if entry[0] not in new_effects:
                         new_effects[entry[0]] = []
@@ -151,14 +151,14 @@ for bsc_vcb in lists:
 
     table.append([
         bsc_vcb,
+        len(original_effects),
         len(all_results),
         len(all_results)/len(lists[bsc_vcb]),
-        len(original_effects),
         len(replicated_effects),
         len(replicated_effects) / len(original_effects)
         ])
 
-header = ['List', 'Weak (n)', 'Weak (%)', 'Original (n)', 'Replicated (n)', 'Replicated (%)']
+header = ['Vocabulary list', 'Original (n)', 'New (n)', 'New (%)', 'Replicated (n)', 'Replicated (%)']
 print('------------')
 print(tabulate(
     table,

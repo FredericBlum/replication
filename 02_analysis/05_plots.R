@@ -5,16 +5,13 @@ library(purrr)
 library(readr)
 library(viridis)
 library(stringr)
-
 library(tidyr)
 library(xtable)
 
 
-## Load data
-soundClasses <- c(
-  'backness', 'height', 'roundedness', 'extreme', 'extreme_roundedness',
-  'voicing', 'manner', 'manner_voicing', 'position', 'position_voicing'
-  )
+soundClasses <- c('backness', 'height', 'roundedness', 'extreme',  'voicing', 
+                  'extreme_roundedness','manner', 'manner_voicing', 'position',
+                  'position_voicing')
 
 myfiles <- paste0(soundClasses, '.csv')
 df <- map_df(myfiles, ~ {
@@ -60,13 +57,14 @@ combined_full <- df %>%
     ) %>% 
   filter(myvar!='vowelConsonant', category!='unrounded', category!='unvoiced')
 
+
 wide_data <- combined_full %>% 
   # Remove negative values of binary categories
   select(new_label, category, concept, result, mean, myvar) %>%
   pivot_wider(names_from=result, values_from=mean) %>%
   rename(old='Original Results', new='New Results') %>%
-  mutate(distance=new - old) %>% 
-  drop_na(old, new) %>% 
+  # Filter out wrong category of 7 entries
+  filter(category!='NA-unvoiced') %>% 
   mutate(m_label=paste0(myvar, '_', category, '_', concept))
 
 
@@ -78,8 +76,8 @@ colors_10 <- c('#0c71ff', '#ca2800', '#ff28ba', '#000096', '#86e300', '#1c5951',
 
 correlation_plot <- ggplot(wide_data, aes(x=old, y=new)) +
   geom_point(aes(fill=myvar), alpha=0.7, size=2, shape=21) +
-  geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), color="red", fill="gray", se=TRUE, size=1.5, alpha=0.5) +
-  geom_abline(slope=1, intercept=0, color="black", linetype="dashed", size=1.5) +
+  geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), color="red", fill="gray", se=TRUE, linewidth=1.5, alpha=0.5) +
+  geom_abline(slope=1, intercept=0, color="black", linetype="dashed", linewidth=1.5) +
   theme_bw() +
   scale_fill_manual(values=colors_10) +
   scale_y_continuous(breaks=c(-0.6, -0.3, 0, 0.3, 0.6)) +
@@ -91,7 +89,6 @@ correlation_plot <- ggplot(wide_data, aes(x=old, y=new)) +
   theme( 
     legend.position="bottom",
     legend.title=element_blank(),
-   # panel.border=element_blank(),
     panel.grid.major.x=element_blank(),
     panel.grid.minor.x=element_blank(),
    panel.grid.minor.y=element_blank()
@@ -106,20 +103,20 @@ ggsave('figures/correlation.pdf', correlation_plot, width=7, height=6, dpi=500)
 # Manhattan plot
 highest_new <- wide_data %>% arrange(-abs(new)) %>% head(n=5) %>% pull(new_label)
 highest_old <- wide_data %>% arrange(-abs(old)) %>% head(n=3) %>% pull(new_label)
-seed <- 161
 
 manhattan_style <- wide_data %>% 
+  # drop [vibrant-unvoiced], [nasal-unvoiced], [lateral-unvoiced]
+  # They are not present in the data
+  drop_na(old, new) %>% 
   ggplot(aes(x=m_label)) +
 
   geom_point(aes(y=old), fill="black", size=2, alpha=0.7, shape=21) +
   geom_point(aes(y=new, fill=myvar), size=2, alpha=0.7, shape=21) +
   
   geom_label_repel(data=subset(wide_data, new_label %in% highest_new), aes(y=new, label=new_label),
-                   size=2, seed=seed, box.padding=0.95) +
-  # 
-  # geom_label_repel(data=subset(wide_data, new_label %in% highest_old), aes(y=old, label=new_label),
-  #                  size=2, min.segment.length=0, seed=seed, box.padding=1.1) +
-  
+                   size=2, seed=161, box.padding=0.5) +
+
+  scale_x_discrete(expand=c(.01, .01)) +
   scale_fill_manual(values=colors_10) +
   annotate('rect', xmin=0, xmax=Inf, ymin=lwr_thresh, ymax=upr_thresh, alpha=.5) +
   theme_bw() +
@@ -140,12 +137,11 @@ manhattan_style <- wide_data %>%
   guides(fill=guide_legend(override.aes=list(size=5, alpha=0.7)))
 
 manhattan_style
-ggsave('figures/manhattan.pdf', manhattan_style, width=7, height=6, dpi=500)
+ggsave('figures/manhattan.pdf', manhattan_style, width=10, height=6, dpi=500)
 
 
 ##############
 # Strong results
-
 combined <- combined_full %>% 
   filter(
     outcome %in% c('Strong', 'Weak'),
@@ -154,7 +150,6 @@ combined <- combined_full %>%
     )
 
 strong <- combined %>% filter(outcome=='Strong', result=='New Results')
-
 
 compare_strong <- combined %>% filter(concept %in% strong$concept) %>%
   select(concept, category, mean, myvar, result, outcome) %>% 
@@ -182,21 +177,20 @@ print(xtable(results_table), type="latex", include.rownames=FALSE)
 combined %>% filter(concept %in% c('DUST', 'TASTE')) %>% 
   arrange(concept, myvar, result, outcome)
 
+colors_2 <- c('#0c71ff', '#ca2800')
 
 # Plot for each sound class
 for (sc in soundClasses) {
   test <- combined %>%
     filter(myvar == sc) %>% 
     ggplot(aes(
-      x=mean, y=paste0(concept, category),
+      x=mean, y=new_label,
       xmin=lwr, xmax=upr,
       color=outcome, size=outcome
       )) +
     geom_errorbar(linewidth=1.5, width=0) +
     geom_point(aes(fill=outcome), shape=21) +
-    geom_vline(xintercept=0, color='red') +
-    geom_label_repel(data=subset(combined, outcome =='Weak' & myvar==sc),  aes(label=label), max.overlaps=2, size=6, box.padding=0.5) +
-    geom_label_repel(data=subset(combined, outcome =='Strong' & myvar==sc), aes(label=label), max.overlaps=99, size=6, box.padding=0.5) +
+    geom_vline(xintercept=0, color='black', linetype="dashed") +
     annotate('rect', xmin=lwr_thresh, xmax=upr_thresh, ymin=0, ymax=Inf, alpha=.1) +
     facet_wrap( ~ result, ncol=2, drop=F) +
     scale_x_continuous(
@@ -204,19 +198,17 @@ for (sc in soundClasses) {
       limits=c(-1.4, 1.4),
       breaks=seq(-1, 1, by=0.5),
       labels=seq(-1, 1, by=0.5)) +
-    scale_y_discrete(name=NULL, expand=c(.03, .03)) +
-    scale_size_manual(name='', values=c(6, 4)) +
-    scale_color_manual(name='', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
-    scale_fill_manual(name='', values=c('Weak'=viridis(10)[3], 'Strong'=viridis(10)[8])) +
+    scale_y_discrete(name=NULL, position = "right") +
+    scale_size_manual(name='', values=c(3, 3)) +
+    scale_color_manual(name='', values=c('Weak'=colors_2[1], 'Strong'=colors_2[2]))+
+    scale_fill_manual(name='', values=c('Weak'=colors_2[1], 'Strong'=colors_2[2]))+
     theme_bw() +
     theme(
       panel.spacing=unit(0.2, "lines"),
-      panel.grid.major.y=element_blank() ,
-      axis.text.y=element_blank(),
-      axis.ticks.y=element_blank(),
-      axis.text.x= element_text(size=20),
-      strip.text.x=element_text(size=30),
+      panel.grid.minor.x=element_blank() ,
+      axis.text.x= element_text(size=10),
+      strip.text.x=element_text(size=16),
       legend.position='none'
       )
-  ggsave(filename=paste0('figures/summary_', sc, '.pdf'), dpi=500, height=20, width=7)
+  ggsave(filename=paste0('figures/summary_', sc, '.pdf'), dpi=500, height=15, width=7)
 }

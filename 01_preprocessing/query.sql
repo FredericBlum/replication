@@ -206,4 +206,6 @@ WHERE
     clts.name NOT LIKE '%tone'
         AND
     clts.name NOT LIKE '%unspecified%'
+        AND
+    clts.name NOT LIKE '% cluster'
 ;
