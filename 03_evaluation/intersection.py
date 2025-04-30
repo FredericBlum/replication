@@ -13,14 +13,12 @@ def read_cl(path):
 
 
 BASE = "../../cldf_resources/concepticon-data/concepticondata/conceptlists/"
+
 # Use local manipulation of Johansson to account for replaced '_' and brackets
 JOHANSSON = "Johansson-2020-344.tsv"
 TAD_100 = BASE + "Tadmor-2009-100.tsv"
 SWAD_100 = BASE + "Swadesh-1955-100.tsv"
 ASJP_40 = BASE + "Holman-2008-40.tsv"
-
-# for item in original_effects:
-#     print(item, original_effects[item])
 
 # Get Concepticon mappings of the Johansson concept list
 change = defaultdict()
@@ -58,11 +56,6 @@ with open('original_results.csv', mode='r', encoding="utf8") as file:
                 mapped_conc.append(line)
 
 
-# Check which concepts had not been added to Concepticon
-# only 'maybe' and kinship-terms
-# for item in missing_concepts:
-#     print('Missing:', item)
-
 # Write mapped original results to file for R plots
 with open('../02_analysis/original_results_mapped.csv', 'w', encoding='utf8', newline='') as f:
     writer = csv.writer(f, delimiter='\t')
@@ -91,6 +84,7 @@ with open('../02_analysis/data/final_results.csv', mode='r', encoding="utf8") as
             ])
 
 rep_score = defaultdict()
+
 # Cycling through all basic vocabulary lists that interest us
 for bsc_vcb in lists:
     print('------------')
@@ -144,7 +138,6 @@ for bsc_vcb in lists:
         if item in original_effects:
             print('Old:', item, original_effects[item])
         print('New:', item, new_effects[item])
-
 
 # rounded and not high-back: # ℹ 8,354 more rows
 # rounded and high back: # ℹ 267,056 more rows

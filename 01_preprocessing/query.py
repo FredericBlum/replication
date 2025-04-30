@@ -51,7 +51,7 @@ header = [
     'voicing', 'manner', 'position'
     ]
 
-with open('data.csv', 'w', encoding='utf8', newline='') as f:
+with open('data/data.csv', 'w', encoding='utf8', newline='') as f:
     writer = csv.writer(f, delimiter=',')
     writer.writerow(header)
     writer.writerows(queried_data)
@@ -90,5 +90,5 @@ for l1, l2 in tqdm(itertools.combinations(coords, 2)):
     geo_matrix = write_value_to_matrix(geo_matrix, dist, lang_to_idx[l1[0]], lang_to_idx[l2[0]])
 
 # Write matrices to file
-write_matrix('vcv_phylo.csv', phylo_matrix, langs)
-write_matrix('vcv_geo.csv', geo_matrix, langs)
+write_matrix('data/vcv_phylo.csv', phylo_matrix, langs)
+write_matrix('data/vcv_geo.csv', geo_matrix, langs)

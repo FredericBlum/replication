@@ -18,7 +18,7 @@ myvar <- 'manner_voicing'
 # 8: extreme_roundedness
 # 10: position_voicing
 
-folder_data_derived <- 'data_derived'  # path to folder with derived .csv files
+folder_posterior_draws <- 'posterior_draws'
 
 # 25% increase/decrease of odds expressed as log-odd s ratio
 upr_thresh <- log(1.25)
@@ -34,10 +34,10 @@ odds <- function(x) {return(x / (1 - x))}
 #############################
 data <- read_rds(paste0('data/processed_', myvar, '.rds', na=c('')))
 
-phylo_vcv <- read.csv('../01_preprocessing/vcv_phylo.csv', row.names=1) %>% as.matrix()
+phylo_vcv <- read.csv('../01_preprocessing/data/vcv_phylo.csv', row.names=1) %>% as.matrix()
 isSymmetric.matrix(phylo_vcv)
 
-geo_vcv <- read.csv('../01_preprocessing/vcv_geo.csv', row.names=1) %>% as.matrix()
+geo_vcv <- read.csv('../01_preprocessing/data/vcv_geo.csv', row.names=1) %>% as.matrix()
 is.positive.definite(geo_vcv)
 
 data2 <-  list(
@@ -113,7 +113,7 @@ mod <- data %>%
 #############################
 new_data <- data %>% distinct(concept)
 new_data <- tibble(concept=unique(data$concept), family='a', language='a')
-fit_name <- paste0(folder_data_derived, '/fit_', myvar, '.rds')
+fit_name <- paste0(folder_posterior_draws, '/fit_', myvar, '.rds')
 if (file.exists(fit_name)) {
   predictions <- readRDS(file=fit_name)
 } else{
@@ -157,6 +157,5 @@ epred_plot <- preds_or %>%
         axis.ticks.y=element_blank(),
         legend.position='none')
 
-# ggsave(filename=paste0('figures/fit_', myvar, '.png'), epred_plot)
-write_csv(preds_or, paste0(folder_data_derived, '/', myvar, '.csv'))
+write_csv(preds_or, paste0(folder_posterior_draws, '/', myvar, '.csv'))
 

@@ -30,6 +30,6 @@ for clist in lists:
             added.append(cid)
 
 print(tabulate(missing, tablefmt='tsv'))
-with open('missing_concepts.csv', 'w', newline='', encoding='utf8') as file:
+with open('data/missing_concepts.csv', 'w', newline='', encoding='utf8') as file:
     w = csv.writer(file)
     w.writerows(missing)
