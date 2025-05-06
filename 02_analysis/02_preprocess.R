@@ -68,7 +68,7 @@ df <- read_csv('../01_preprocessing/data/data.csv', na=c('')) %>%
   )
 
 # 
-df %>% filter(vowelConsonant=='vowel')
+df %>% group_by(extreme_roundedness) %>% count()
 
 
 # Words that are uncommonly long/short

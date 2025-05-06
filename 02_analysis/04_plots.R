@@ -8,6 +8,7 @@ library(tidyr)
 library(xtable)
 
 
+colors_10 <- c('#0c71ff', '#ca2800', '#ff28ba', '#000096', '#86e300', '#1c5951', '#20d2ff', '#20ae86', '#590000', '#65008e')
 soundClasses <- c('backness', 'height', 'roundedness', 'extreme',  'voicing', 
                   'extreme_roundedness','manner', 'manner_voicing', 'position',
                   'position_voicing')
@@ -70,8 +71,6 @@ wide_data <- combined_full %>%
 pearson_corr <- cor.test(wide_data$old, wide_data$new, method="pearson")
 corr_label <- paste("Pearson's r=", round(pearson_corr$estimate, 2),
                     "\np-value < ", '2.2e-16')
-
-colors_10 <- c('#0c71ff', '#ca2800', '#ff28ba', '#000096', '#86e300', '#1c5951', '#20d2ff', '#20ae86', '#590000', '#65008e')
 
 correlation_plot <- ggplot(wide_data, aes(x=old, y=new)) +
   geom_point(aes(fill=myvar), alpha=0.7, size=2, shape=21) +
@@ -141,24 +140,25 @@ ggsave('figures/manhattan.pdf', manhattan_style, width=10, height=6, dpi=500)
 
 ##############
 # Strong results
-combined <- combined_full %>% 
-  filter(
-    outcome %in% c('Strong', 'Weak'),
-    # Remove negative values of binary outcomes
-    !(myvar %in% c('voicing', 'roundedness') & mean < 0)
-    )
+strong <- combined_full %>% 
+  filter(outcome %in% c('Strong'))
 
-strong <- combined %>% filter(outcome=='Strong', result=='New Results')
 
-compare_strong <- combined %>% filter(concept %in% strong$concept) %>%
+compare_strong <- combined_full %>% filter(concept %in% strong$concept) %>%
   select(concept, category, mean, myvar, result, outcome) %>% 
   arrange(concept, category, result)
 
+combined_full %>% filter(myvar=='extreme_roundedness', result=='New Results', outcome!='Doubtful') %>% group_by(category) %>% count()
+combined_full %>% filter(myvar=='extreme_roundedness', result=='Original Results', outcome!='Doubtful') %>% group_by(category) %>% count()
+combined_full %>% filter(concept=='BREAST', result=='New Results', myvar=='manner_voicing')
+
 ################################################################################################
 # Table stuff for paper
-combined %>% select(-word_dim, -topCardinal) %>% write_csv(, file='data/final_results.csv')
+combined_full %>% select(-word_dim, -topCardinal) %>% write_csv(, file='data/final_results.csv')
 
-results_table <- combined %>% group_by(myvar, result, outcome) %>% 
+results_table <- combined_full %>% 
+  filter(outcome!='Doubtful') %>% 
+  group_by(myvar, result, outcome) %>% 
   summarise(n=n()) %>% 
   ungroup() %>% 
   pivot_wider(names_from=c(result, outcome), values_from=n, values_fill=0)
@@ -172,12 +172,6 @@ print(xtable(results_table), type="latex", include.rownames=FALSE)
 
 
 ################################
-# Highest results
-combined %>% filter(concept %in% c('DUST', 'TASTE')) %>% 
-  arrange(concept, myvar, result, outcome)
-
-colors_2 <- c('#0c71ff', '#ca2800')
-
 # Plot for each sound class
 for (sc in soundClasses) {
   test <- combined %>%
@@ -199,8 +193,8 @@ for (sc in soundClasses) {
       labels=seq(-1, 1, by=0.5)) +
     scale_y_discrete(name=NULL, position = "right") +
     scale_size_manual(name='', values=c(3, 3)) +
-    scale_color_manual(name='', values=c('Weak'=colors_2[1], 'Strong'=colors_2[2]))+
-    scale_fill_manual(name='', values=c('Weak'=colors_2[1], 'Strong'=colors_2[2]))+
+    scale_color_manual(name='', values=c('Weak'=colors_10[1], 'Strong'=colors_10[2]))+
+    scale_fill_manual(name='', values=c('Weak'=colors_10[1], 'Strong'=colors_10[2]))+
     theme_bw() +
     theme(
       panel.spacing=unit(0.2, "lines"),
