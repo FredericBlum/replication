@@ -108,7 +108,7 @@ manhattan_style <- wide_data %>%
   drop_na(old, new) %>% 
   ggplot(aes(x=m_label)) +
 
-  geom_point(aes(y=old), fill="black", size=2, alpha=0.7, shape=21) +
+  geom_point(aes(y=old), fill="black", size=2, alpha=0.9, shape=21) +
   geom_point(aes(y=new, fill=myvar), size=2, alpha=0.7, shape=21) +
   
   geom_label_repel(data=subset(wide_data, new_label %in% highest_new), aes(y=new, label=new_label),
@@ -174,7 +174,7 @@ print(xtable(results_table), type="latex", include.rownames=FALSE)
 ################################
 # Plot for each sound class
 for (sc in soundClasses) {
-  test <- combined %>%
+  test <- combined_full %>%
     filter(myvar == sc) %>% 
     ggplot(aes(
       x=mean, y=new_label,
