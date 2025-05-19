@@ -23,7 +23,7 @@ For Windows, please follow this tutorial: <https://doi.org/10.15475/calcip.2024.
 
 ### R packages
 
-Some code is also in R. You can install all the necessary packages through `renv`. Just run the code that you can find in `00_utils/packages.R`:
+Some code is also in R. We have used R version v4.5.0. You can install all the necessary packages through `renv`. Just run the code that you can find in `02_analysis/packages.R`:
 
 ```R
 install.packages('renv')
@@ -63,7 +63,11 @@ cldf createdb data/johanssonsoundsymbolic/cldf/cldf-metadata.json data/johansson
 cldf createdb data/glottolog/cldf/cldf-metadata.json data/glottolog.sqlite3
 ```
 
-Now you can create the `data.csv` file for further processing by retrieving the data from Lexibank: `python query.py`.
+Now you can create the `data.csv` file for further processing by retrieving the data from Lexibank:
+
+```shell
+python query.py
+```
 
 ## Running the analysis
 
@@ -73,16 +77,53 @@ We can now switch to the `02_analysis` folder.
 cd ../02_analysis
 ```
 
-### File overview
+Since the models and posterior simulations result in very large files, you can download them from OSF: <https://osf.io/4kg52/?view_only=a96702c55db14528b9a3e7ed3701588b>
 
+Due to the large file size that exceeds what is allowed from OSF, the files are split. Please run the following command in the shell to re-create the model files for further processing in R.
+
+```shell
+for f in *_split_aa; do 
+  base="${f%_split_aa}"; 
+  cat "${base}_split_"* > "${base}.tar.gz" && \
+  tar -xvf "${base}.tar.gz" && \
+  rm "${base}.tar.gz" "${base}_split_"*; 
+done
+```
+
+The models have been split using the following shell command:
+
+```shell
+for f in *.rds; do 
+  base="${f%.rds}"; 
+  tar -czf "${base}.tar.gz" "$f" && \
+  split -b 500M "${base}.tar.gz" "${base}_split_" && \
+  rm "${base}.tar.gz" "$f" && \
+done
+```
+
+### 02_analysis files overview
+
+The R code was run using 
+
+- `packages.R` - installs the necessary R packages
 - `01_priors.R` - The distributions for my priors.
 - `02_preprocess.R` - This script returns the data files for the individual phonetic categories. Creates
 - `03_models.R` - Running the model for all 10 phonetic categories.
 - `04_plots.R` - Loading the individual results and comparing them to the original results.
 
-The models and posterior predictive simulations can be accessed on OSF: <>
+You can run the code either line by line, or using Rscript from the command line.
 
-Please extract the two folders (`posterior_draws/` and `models/`) and put them into the main folder in order to have the directory-setup working.
+```shell
+Rscript packages.R
+Rscript 01_priors.R
+Rscript 02_preprocess.R
+Rscript 03_models.R
+Rscript 04_plots.R
+```
+
+Please note that the scripts `02_` and `03_` are written to work with only one of the ten phonological variables at a time. To run the processing and models for all of them, you need to manually change the variable `myvar` to one of the following values: `backness`, `extreme_roundedness`, `extreme`, `height`, `manner_voicing`, `manner`, `position_voicing`, `position`, `roundedness`, `voicing`.
+
+Please extract the two folders (`posterior_draws/` and `models/`) and put them into the folder 02_analysis in order to have the directory-setup working.
 
 ### Evaluation thresholds
 
