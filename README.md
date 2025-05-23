@@ -56,7 +56,7 @@ cat data/missing_concepts.csv >> data/johanssonsoundsymbolic/cldf/parameters.csv
 You can now create the SQLite3 databases for all the data necessary to run the query and the models.
 
 ```shell
-rm data/*.sqlite3
+rm -f data/*.sqlite3
 cldf createdb data/clts/cldf-metadata.json data/clts.sqlite3
 cldf createdb data/lexibank-analysed/cldf/wordlist-metadata.json data/lexibank.sqlite3
 cldf createdb data/johanssonsoundsymbolic/cldf/cldf-metadata.json data/johanssonsoundsymbolic.sqlite3
