@@ -4,7 +4,9 @@ library(tidyr)
 library(tibble)
 library(forcats)
 
-myvar <- 'voicing'
+args = commandArgs(trailingOnly=TRUE)
+
+myvar <- args[1]
 # What levels are we modeling?
 # 2: voicing, roundedness
 # 3: height, backness
