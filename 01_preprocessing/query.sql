@@ -198,7 +198,7 @@ ON n_der.wd_id = lb.wd_id
 WHERE
     -- Add only languages that ARE NOT in JSS
     jss_l.glottocode IS NULL
-        AND
+       AND
     lb.unicode != '+'
         AND
     lb.unicode != ''

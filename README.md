@@ -42,7 +42,7 @@ cd 01_preprocessing
 git clone https://github.com/cldf-clts/clts data/clts --branch v2.3.0
 git clone https://github.com/lexibank/lexibank-analysed.git data/lexibank-analysed --branch v2.1
 git clone https://github.com/lexibank/johanssonsoundsymbolic data/johanssonsoundsymbolic --branch v1.3
-git clone https://github.com/glottolog/glottolog-cldf data/glottolog --branch v5.1
+git clone https://github.com/glottolog/glottolog-cldf data/glottolog --branch v5.2
 git clone https://github.com/concepticon/concepticon-data data/concepticon --branch v3.4.0
 ```
 
