@@ -77,6 +77,23 @@ We can now switch to the `02_analysis` folder.
 cd ../02_analysis
 ```
 
+### Running the shell script
+
+```shell
+sbatch --exclude=dlcenode[01-16] --export=PARAM=voicing runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=roundedness runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=height runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=backness runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=extreme runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=position runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=manner runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=manner_voicing runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=extreme_roundedness runs.sh
+sbatch --exclude=dlcenode[01-16] --export=PARAM=position_voicing runs.sh
+```
+
+### Downloading model files
+
 Since the models and posterior simulations result in very large files, you can download them from OSF: <https://osf.io/4kg52/?view_only=a96702c55db14528b9a3e7ed3701588b>
 
 Due to the large file size that exceeds what is allowed from OSF, the files are split. Please run the following command in the shell to re-create the model files for further processing in R.
