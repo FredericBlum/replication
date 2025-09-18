@@ -61,31 +61,11 @@ n_levels <- length(myPropVars)
 #############################
 ### Priors                ###
 #############################
-priors_in <- list(
-  intercepts=lapply(2:n_levels, function(i) {
-    prior(normal(0, 0.5), class=Intercept, dpar='Intercept')}),
-  sd=lapply(2:n_levels, function(i) {
-    prior(gamma(3, 40), class=sd, dpar='sd')})
+get_prior(
+  data=data,
+  family='dirichlet',
+  formula=respDir ~ 1 + (1|concept)
 )
-
-priors <- c(prior(gamma(1, 1), class=phi))
-for (l in 1:length(priors_in)) {
-  list <- priors_in[[l]]
-  for (i in 1:length(list)) {
-    j <- i + 1
-    list[[i]]$dpar <- paste0('mu', j)
-    priors <- c(priors, list[[i]])
-  }
-}
-
-# get_prior(
-#   data=data,
-#   data2=data2,
-#   family='dirichlet',
-#   formula=respDir ~ 1 + (1|concept) +
-#     (1 | gr(family, cov=phylo_vcv)) +
-#     (1 | gr(language, cov=geo_vcv))
-# )
 
 #############################
 ### Model                 ###
@@ -93,12 +73,8 @@ for (l in 1:length(priors_in)) {
 mod <- data %>%
   mutate(spatial_id=language, phylo_id=language) %>% 
   brm(
-   data2=data2,
    family='dirichlet',
-   formula=
-     respDir ~ 1 + (1|concept)
-      ),
-   prior=priors,
+   formula=respDir ~ 1 + (1|concept),
    silent=0,
    backend='cmdstanr',
    control=list(adapt_delta=0.85, max_treedepth=10),
@@ -106,55 +82,3 @@ mod <- data %>%
    threads=threading(4),
    iter=7500, warmup=2500, chains=4, cores=4
    )
-
-#############################
-### Posterior predictions ###
-#############################
-new_data <- data %>% distinct(concept)
-new_data <- tibble(concept=unique(data$concept), family='a', language='a')
-fit_name <- paste0(folder_posterior_draws, '/fit_', myvar, '.rds')
-if (file.exists(fit_name)) {
-  predictions <- readRDS(file=fit_name)
-} else{
-  print('Sorry, the file does not yet exist. This may take some time.')
-  predictions <- add_epred_draws(newdata=new_data, mod, allow_new_levels=T) 
-  saveRDS(predictions, file=fit_name)
-}
-
-# Compute odds ratio for all fits based on odds for each category
-preds_or <- predictions %>% group_by(.category) %>%
-  mutate(
-    OR_cat=odds(mean(.epred)),
-    OR_word=log(odds(.epred)/OR_cat)
-    ) %>% 
-  ungroup() %>% 
-  mutate(category=myPropVars[.category]) %>% 
-  group_by(concept, category) %>% 
-  # Summarise per word in each category
-  summarise(mean=mean(OR_word), sd=sd(OR_word)) %>% 
-  mutate(lwr=mean-2*sd, upr=mean+2*sd) %>%
-  # Add Label for words above/below threshold
-  mutate(word_dim=ifelse((lwr > upr_thresh | upr < lwr_thresh), toupper(as.character(concept)), ''))
-
-#############################
-### Plotting              ###
-#############################
-epred_plot <- preds_or %>%
-  ggplot(aes(x=concept, y=mean, ymin=lwr, ymax=upr, label=word_dim)) +
-  geom_point() +
-  geom_errorbar(width=0) +
-  geom_text(size=3, nudge_x=3) +
-  geom_point(aes(x=concept, y=mean), shape=4) +
-  scale_x_discrete(labels=NULL, expand=c(0.02, 0.02)) +
-  xlab('Concept') +
-  ylab('Proportion, %') +
-  coord_flip() +
-  facet_wrap(~category, ncol=n_levels) +
-  theme_bw() +
-  theme(panel.grid=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
-        legend.position='none')
-
-write_csv(preds_or, paste0(folder_posterior_draws, '/', myvar, '.csv'))
-
