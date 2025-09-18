@@ -8,8 +8,9 @@ library(dplyr)
 library(matrixcalc) # check positive-definiteness
 
 # What levels are we modeling?
-myvar <- 'voicing'
+args = commandArgs(trailingOnly=TRUE)
 
+myvar <- args[1]
 # 2: voicing, roundedness
 # 3: height, backness
 # 4: extreme
