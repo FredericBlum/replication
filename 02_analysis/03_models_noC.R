@@ -78,7 +78,61 @@ mod <- data %>%
    silent=0,
    backend='cmdstanr',
    control=list(adapt_delta=0.85, max_treedepth=10),
-   file=paste0('models/lb2_large_noC', myvar, '.rds'),
+   file=paste0('models/noC_', myvar, '.rds'),
    threads=threading(4),
    iter=7500, warmup=2500, chains=4, cores=4
    )
+
+priors_in <- list(
+  intercepts=lapply(2:n_levels, function(i) {
+    prior(normal(0, 0.5), class=Intercept, dpar='Intercept')}),
+  sd=lapply(2:n_levels, function(i) {
+    prior(gamma(3, 40), class=sd, dpar='sd')})
+)
+
+priors <- c(prior(gamma(1, 1), class=phi))
+for (l in 1:length(priors_in)) {
+  list <- priors_in[[l]]
+  for (i in 1:length(list)) {
+    j <- i + 1
+    list[[i]]$dpar <- paste0('mu', j)
+    priors <- c(priors, list[[i]])
+  }
+}
+
+mod <- data %>%
+  mutate(spatial_id=language, phylo_id=language) %>% 
+  brm(
+    data2=data2,
+    family='dirichlet',
+    formula=
+      respDir ~ 1 + (1|concept) + 
+      (1 | gr(phylo_id, cov=phylo_vcv)
+      ),
+    prior=priors,
+    silent=0,
+    backend='cmdstanr',
+    control=list(adapt_delta=0.85, max_treedepth=10),
+    file=paste0('models/phyloC_', myvar, '.rds'),
+    threads=threading(4),
+    iter=7500, warmup=2500, chains=4, cores=4
+  )
+
+
+mod <- data %>%
+  mutate(spatial_id=language, phylo_id=language) %>% 
+  brm(
+    data2=data2,
+    family='dirichlet',
+    formula=
+      respDir ~ 1 + (1|concept) + 
+      (1 | gr(spatial_id, cov=geo_vcv)
+      ),
+    prior=priors,
+    silent=0,
+    backend='cmdstanr',
+    control=list(adapt_delta=0.85, max_treedepth=10),
+    file=paste0('models/areaC_', myvar, '.rds'),
+    threads=threading(4),
+    iter=7500, warmup=2500, chains=4, cores=4
+  )

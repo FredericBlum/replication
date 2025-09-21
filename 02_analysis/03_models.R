@@ -105,7 +105,7 @@ mod <- data %>%
    silent=0,
    backend='cmdstanr',
    control=list(adapt_delta=0.85, max_treedepth=10),
-   file=paste0('models/lb2_large_', myvar, '.rds'),
+   file=paste0('models/', myvar, '.rds'),
    threads=threading(4),
    iter=7500, warmup=2500, chains=4, cores=4
    )
