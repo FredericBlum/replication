@@ -28,24 +28,27 @@ upr_thresh <- log(1.25)
 lwr_thresh <- log(1/1.25)
 
 # Pre-Process dataframes
-orig <- read_tsv('original_results_mapped.csv',  show_col_types=F) %>% 
-  select(word, group, fit, lwr, upr, topCardinal, myvar) %>% 
-  rename(mean=fit, category=group, concept=word) %>% 
-  mutate(result='Original Results', sd=NA,
-         category=str_replace(category, '-voice', '-unvoiced'),
-         category=str_replace(category, '\\+voice', '-voiced'),
-         # Outcome is Strong if HPDI outside of ROPE
-         # Outcome is Weak if Mean outside of ROPE and HPDI doesn't include 0
-         # Outcome is Absent if HPDI fully inside ROPE
+orig <- map_df(myfiles, ~ {
+  new_file <- paste0('../02_analysis/posterior_draws/', .x)
+  if (file.exists(new_file)) {
+    temp <- read_csv(
+      new_file, show_col_types=F, col_types=cols_only(
+        concept='c', category='c', mean='?', sd='?', lwr='?', upr='?'))
+    temp$myvar <- gsub('\\.csv$', '', .x)
+    return(temp)
+  }}) %>% 
+  mutate(result='Original Results',
+         label=paste0(toupper(concept), ' [', category, ']'),
          outcome=ifelse((lwr>upr_thresh | upr < lwr_thresh), 'Strong', ifelse(
            (lwr > -lwr_thresh & upr < upr_thresh), 'No', ifelse(
-             ((lwr > 0 & mean > upr_thresh) | (upr < 0 & mean < lwr_thresh)), 'Weak', 'Doubtful'))),
-         label=ifelse(outcome=='Strong', paste0(toupper(concept), ' [', category, ']'), NA)
-  )
+             ((lwr > 0 & mean > upr_thresh) | (upr < 0 & mean < lwr_thresh)), 'Weak', 'Doubtful')
+         )))
+
 
 combined_full <- df %>% 
   mutate(
-    result='New Results', topCardinal='',
+    myvar=str_replace(myvar, 'full_', ''),
+    result='New Results',
     label=paste0(toupper(concept), ' [', category, ']'),
     outcome=ifelse((lwr>upr_thresh | upr < lwr_thresh), 'Strong', ifelse(
       (lwr > -lwr_thresh & upr < upr_thresh), 'No', ifelse(
@@ -57,7 +60,7 @@ combined_full <- df %>%
     result=factor(result, levels=c("Original Results","New Results")),
     new_label=paste0(concept, ' [', category, ']')
     ) %>% 
-  filter(myvar!='vowelConsonant', category!='unrounded', category!='unvoiced')
+  filter(myvar!='vowelConsonant')
 
 
 wide_data <- combined_full %>% 
@@ -88,8 +91,8 @@ correlation_plot <- ggplot(wide_data, aes(x=old, y=new)) +
   geom_abline(slope=1, intercept=0, color="black", linetype="dashed", linewidth=1.5) +
   theme_bw() +
   scale_fill_manual(values=colors_10) +
-  scale_y_continuous(breaks=c(-0.6, -0.3, 0, 0.3, 0.6)) +
-  scale_x_continuous(breaks=c(-0.6, -0.3, 0, 0.3, 0.6, 0.9)) +
+  scale_y_continuous(breaks=c(-0.6, -0.3, 0, 0.3, 0.6), limits=c(-0.75, 0.75)) +
+  scale_x_continuous(breaks=c(-0.6, -0.3, 0, 0.3, 0.6, 0.9), limits=c(-0.75, 0.75)) +
   labs(
     x='Old Results',
     y='New Results'
@@ -105,7 +108,10 @@ correlation_plot <- ggplot(wide_data, aes(x=old, y=new)) +
   guides(fill=guide_legend(override.aes=list(size=5, alpha=0.7)))
 
 correlation_plot
-ggsave('figures/correlation.pdf', correlation_plot, width=7, height=6, dpi=500)
+ggsave('../02_analysis/figures/correlation_fullvssample.pdf', correlation_plot, width=7, height=6, dpi=500)
+
+
+wide_data %>% mutate(diff=old-new) %>% arrange(-diff)
 
 #####################################
 # Manhattan plot
