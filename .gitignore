@@ -10,7 +10,8 @@ glottolog/
 johanssonsoundsymbolic/
 
 models/
-
+data_derived/
+posterior_draws/
 data.csv
 data_full.csv
 *.sqlite3
