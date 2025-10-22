@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J repl
-#SBATCH --output=%x.%j.full_out
-#SBATCH --error=%x.%j.full_err
+#SBATCH --output=%x.%j.out
+#SBATCH --error=%x.%j.err
 #SBATCH --partition=standard  
 #SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=64G
@@ -11,4 +11,4 @@ set -euo pipefail
 : "${PARAM}"
 
 module load R/4.5.1
-Rscript 04_modelComp_full.R "${PARAM}"
+Rscript 04_modelComp_loo.R "${PARAM}"
