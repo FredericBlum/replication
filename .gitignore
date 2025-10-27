@@ -1,6 +1,7 @@
 *Rproj
 *.DS_Store
 .Rproj.user
+renv/
 
 lexibank-analysed/
 *.sqlite

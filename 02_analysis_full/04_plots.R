@@ -13,7 +13,7 @@ soundClasses <- c('backness', 'height', 'roundedness', 'extreme',  'voicing',
                   'extreme_roundedness','manner', 'manner_voicing', 'position',
                   'position_voicing')
 
-myfiles <- paste0(soundClasses, '.csv')
+myfiles <- paste0('full_', soundClasses, '.csv')
 df <- map_df(myfiles, ~ {
   new_file <- paste0('posterior_draws/', .x)
   if (file.exists(new_file)) {
@@ -28,7 +28,8 @@ upr_thresh <- log(1.25)
 lwr_thresh <- log(1/1.25)
 
 # Pre-Process dataframes
-orig <- map_df(myfiles, ~ {
+myfiles <- paste0(soundClasses, '.csv')
+reduced <- map_df(myfiles, ~ {
   new_file <- paste0('../02_analysis/posterior_draws/', .x)
   if (file.exists(new_file)) {
     temp <- read_csv(
@@ -54,7 +55,7 @@ combined_full <- df %>%
       (lwr > -lwr_thresh & upr < upr_thresh), 'No', ifelse(
         ((lwr > 0 & mean > upr_thresh) | (upr < 0 & mean < lwr_thresh)), 'Weak', 'Doubtful')
       ))) %>%
-  rbind(orig) %>% 
+  rbind(reduced) %>% 
   mutate(
     concept=toupper(concept),
     result=factor(result, levels=c("Original Results","New Results")),
@@ -74,6 +75,22 @@ wide_data <- combined_full %>%
   # drop [vibrant-unvoiced], [nasal-unvoiced], [lateral-unvoiced]
   # They are not present in the data
   drop_na(old, new)
+
+
+results_table <- combined_full %>% 
+  filter(outcome!='Doubtful') %>% 
+  group_by(myvar, result, outcome) %>% 
+  summarise(n=n()) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from=c(result, outcome), values_from=n, values_fill=0)
+
+colnames(results_table) <- c("Category", "Original weak", "Full weak", "Original strong", 'Full strong')
+results_table <- results_table %>%
+  select(Category, 'Original strong', 'Full strong', 'Original weak', 'Full weak') %>% 
+  add_row(Category="Total", summarise(., across(where(is.numeric), sum)))
+
+print(xtable(results_table), type="latex", include.rownames=FALSE)
+
 
 
 pearson_corr <- cor.test(wide_data$old, wide_data$new, method="pearson")
@@ -146,39 +163,6 @@ manhattan_style <- wide_data %>%
 
 manhattan_style
 ggsave('figures/manhattan.pdf', manhattan_style, width=10, height=6, dpi=500)
-
-
-##############
-# Strong results
-strong <- combined_full %>% 
-  filter(outcome %in% c('Strong'))
-
-
-compare_strong <- combined_full %>% filter(concept %in% strong$concept) %>%
-  select(concept, category, mean, myvar, result, outcome) %>% 
-  arrange(concept, category, result)
-
-combined_full %>% filter(myvar=='extreme_roundedness', result=='New Results', outcome!='Doubtful') %>% group_by(category) %>% count()
-combined_full %>% filter(myvar=='extreme_roundedness', result=='Original Results', outcome!='Doubtful') %>% group_by(category) %>% count()
-combined_full %>% filter(concept=='BREAST', result=='New Results', myvar=='manner_voicing')
-
-################################################################################################
-# Table stuff for paper
-combined_full %>% select(-topCardinal) %>% write_csv(, file='data/final_results.csv')
-
-results_table <- combined_full %>% 
-  filter(outcome!='Doubtful') %>% 
-  group_by(myvar, result, outcome) %>% 
-  summarise(n=n()) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from=c(result, outcome), values_from=n, values_fill=0)
-
-colnames(results_table) <- c("Category", "Original_strong", "Original_weak", "New_weak", 'New_strong')
-results_table <- results_table %>%
-  select(Category, Original_strong, New_strong, Original_weak, New_weak) %>% 
-  add_row(Category="Total", summarise(., across(where(is.numeric), sum)))
-
-print(xtable(results_table), type="latex", include.rownames=FALSE)
 
 
 ################################

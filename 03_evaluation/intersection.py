@@ -1,6 +1,6 @@
 import csv
-from csvw.dsv import UnicodeDictReader
 from collections import defaultdict
+from csvw.dsv import UnicodeDictReader
 from tabulate import tabulate
 
 
@@ -12,7 +12,7 @@ def read_cl(path):
     return concept_dict
 
 
-BASE = "data/concepticon/concepticondata/conceptlists/"
+BASE = "../01_preprocessing/data/concepticon/concepticondata/conceptlists/"
 
 # Use local manipulation of Johansson to account for replaced '_' and brackets
 JOHANSSON = "Johansson-2020-344.tsv"
@@ -107,9 +107,10 @@ for bsc_vcb in lists:
 
     # Go through new results
     for entry in results:
-        if entry[0] in lists[bsc_vcb] and entry[2] == 'New Results':  # and entry[1] != 'high-back-rounded':
+        if entry[0] in lists[bsc_vcb] and entry[2] == 'New Results':
             # Get number of concepts for which an effect has been found
             if entry[0] not in all_results:
+                print(entry)
                 all_results.append(entry[0])
             # Check if pattern had been observed previously, for concept and feature
             if entry[0] in original_effects:
@@ -131,7 +132,6 @@ for bsc_vcb in lists:
     print('Replicated:', len(replicated_effects))
     for item in replicated_effects:
         print(item, replicated_effects[item])
-
     print('------------')
     print('New effects:', len(new_effects))
     for item in new_effects:
@@ -139,9 +139,7 @@ for bsc_vcb in lists:
             print('Old:', item, original_effects[item])
         print('New:', item, new_effects[item])
 
-# rounded and not high-back: # ℹ 8,354 more rows
-# rounded and high back: # ℹ 267,056 more rows
-
+    print('all:', all_results)
     table.append([
         bsc_vcb,
         len(original_effects),
