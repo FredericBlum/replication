@@ -72,7 +72,7 @@ lists = {name: read_cl(file) for name, file in [
 results = []
 table = []
 
-with open('../02_analysis/data/final_results.csv', mode='r', encoding="utf8") as file:
+with open('../02_analysis_full/data/final_results.csv', mode='r', encoding="utf8") as file:
     data = csv.reader(file)
     headers = next(data)
     for line in data:
@@ -90,9 +90,9 @@ for bsc_vcb in lists:
     print('------------')
     print('Results for', bsc_vcb)
 
-    original_effects = defaultdict()
-    replicated_effects = defaultdict()
-    new_effects = defaultdict()
+    original_effects = defaultdict(list)
+    replicated_effects = defaultdict(list)
+    new_effects = defaultdict(list)
     all_results = []
     # Establish baseline for quantiyfying the replication
     # Dictionary with structure key:CONCEPT value: [features]
@@ -102,41 +102,37 @@ for bsc_vcb in lists:
         if item[0] in lists[bsc_vcb] and item[2] == 'Original Results' and item[0] in symbolic_concepts:
             # Add concept if not yet in dictionary
             if item[0] not in original_effects:
-                original_effects[item[0]] = []
-            original_effects[item[0]].append(item[1])  # Feature
+                original_effects[item[0]].append(item[1]) # Feature
 
     # Go through new results
     for entry in results:
-        if entry[0] in lists[bsc_vcb] and entry[2] == 'New Results':
+        if entry[0] in lists[bsc_vcb] and entry[2] == 'New Results' and entry[3] != 'Doubtful':
             # Get number of concepts for which an effect has been found
             if entry[0] not in all_results:
-                print(entry)
                 all_results.append(entry[0])
             # Check if pattern had been observed previously, for concept and feature
             if entry[0] in original_effects:
                 if entry[1] in original_effects[entry[0]]:
                     if entry[0] not in replicated_effects:
-                        replicated_effects[entry[0]] = []
-                    replicated_effects[entry[0]].append(entry[1])
-
+                        replicated_effects[entry[0]].append(entry[1])
                 else:
-                    if entry[0] not in new_effects:
-                        new_effects[entry[0]] = []
                     new_effects[entry[0]].append(entry[1])
 
+            else:
+                new_effects[entry[0]].append(entry[1])
+
     rep_score[bsc_vcb] = len(replicated_effects) / len(lists[bsc_vcb])
+    # print('------------')
+    # print('Original:', len(original_effects))
     print('------------')
 
-    print('Original:', len(original_effects))
-
-    print('Replicated:', len(replicated_effects))
+    # print('Replicated:', len(replicated_effects))
     for item in replicated_effects:
-        print(item, replicated_effects[item])
-    print('------------')
+        print('Replicated:', item, replicated_effects[item])
     print('New effects:', len(new_effects))
     for item in new_effects:
-        if item in original_effects:
-            print('Old:', item, original_effects[item])
+        # if item in original_effects:
+        #     print('Old:', item, original_effects[item])
         print('New:', item, new_effects[item])
 
     print('all:', all_results)

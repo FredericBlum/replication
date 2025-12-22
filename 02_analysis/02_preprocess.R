@@ -69,10 +69,10 @@ df <- read_csv('../01_preprocessing/data/data.csv', na=c('')) %>%
     macroarea = as.character(macroarea)
   )
 
-df %>% group_by(unicode, name, roundedness, backness, height, extreme, voicing, manner, position) %>% 
-  summarize(n=n()) %>% 
-  arrange(-n) %>% 
-  filter(is.na(roundedness))
+ovrview <- df %>% group_by(unicode, name, roundedness, backness, height, extreme, voicing, manner, position) %>%
+  filter(is.na(voicing)) %>% 
+  group_by(extreme_roundedness, unicode) %>%
+  summarize(n=n()) %>% arrange(-n)
 
 # Words that are uncommonly long/short
 avg_length <- df %>% group_by(concept) %>% summarise(mean=mean(nPhonemesPerWord))
