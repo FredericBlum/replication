@@ -127,12 +127,12 @@ manhattan_style <- wide_data %>%
     ) +
   geom_point(aes(y=value, shape=model, fill=fill_group), size=2, alpha=0.7) +
   geom_label_repel(data=subset(wide_data, new_label %in% highest_new), aes(y=new, label=new_label),
-                   size=2, seed=161, box.padding=0.7) +
+                   size=4, seed=161, box.padding=0.7) +
   scale_x_discrete(expand=c(.01, .01)) +
   scale_fill_manual(values=colors_man, labels=c('gray'='old results')) +
   scale_shape_manual(values=c("old"=21, "new"=24)) +
   annotate('rect', xmin=0, xmax=Inf, ymin=lwr_thresh, ymax=upr_thresh, alpha=.5) +
-  theme_bw() +
+  theme_bw(base_size = 18) +
   labs(
     x='Phonetic features per concept',
     y='log-odds'
