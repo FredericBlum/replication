@@ -108,7 +108,7 @@ correlation_plot <- ggplot(wide_data, aes(x=old, y=new)) +
   guides(fill=guide_legend(override.aes=list(size=5, alpha=0.7)))
 
 correlation_plot
-ggsave('figures/correlation.pdf', correlation_plot, width=7, height=6, dpi=500)
+ggsave('figures/correlation.pdf', correlation_plot, width=12, height=6, dpi=500)
 
 #####################################
 # Manhattan plot
